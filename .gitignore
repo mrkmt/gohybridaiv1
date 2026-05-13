@@ -5,8 +5,16 @@ dist/
 
 # Environment variables
 .env
+.env*
 .env.*
 !.env.example
+
+# Credentials and Keys
+*-key.json
+project-*.json
+*.pem
+*.key
+*.pub
 
 # OS files
 .DS_Store
