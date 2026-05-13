@@ -1,0 +1,29 @@
+{
+  "watch": [
+    "api",
+    "src",
+    "*.ts"
+  ],
+  "ext": "ts,json",
+  "ignore": [
+    "node_modules/**",
+    "local_storage/**",
+    "src/local_storage/**",
+    "test-results/**",
+    "playwright-report/**",
+    "reports/**",
+    "uploads/**",
+    "tests/**",
+    "tests/generated/**",
+    "active-tickets.json",
+    "src/data/*.json",
+    "src/services/*.json",
+    "**/*.cache.json",
+    "src/**/*.json",
+    "api/**/*.json",
+    "**/*.log"
+  ],
+  "delay": 2000,
+  "verbose": false,
+  "restartable": "rs"
+}

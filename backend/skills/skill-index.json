@@ -1,0 +1,102 @@
+{
+  "patterns": [
+    {
+      "id": "jira-gb-340-1772741662510",
+      "type": "jira",
+      "module": "Login",
+      "issueType": "LOGIN_FAILED",
+      "selectors": [
+        "input[name=\"idnumber\"]",
+        "input[name=\"username\"]",
+        "input[name=\"password\"]",
+        "button.btn.btn-primary"
+      ],
+      "checklist": [
+        {"category": "Authentication", "description": "Verify credentials"},
+        {"category": "Authentication", "description": "Check password case"},
+        {"category": "Network", "description": "Verify API endpoint"}
+      ],
+      "learnedPatterns": [
+        "GlobalHR login is case-sensitive",
+        "API returns 400 for wrong credentials"
+      ],
+      "version": 1,
+      "createdAt": "2026-03-05T20:14:22.510Z",
+      "updatedAt": "2026-04-03T13:00:00.000Z",
+      "usedBy": ["GB-340"],
+      "successRate": 1.0,
+      "changeLog": [
+        {"version": 1, "date": "2026-03-05T20:14:22.510Z", "change": "Initial pattern created from GB-340"}
+      ]
+    },
+    {
+      "id": "recording-login-1772741662510",
+      "type": "recording",
+      "module": "Login",
+      "selectors": [
+        "input[name=\"idnumber\"]",
+        "input[name=\"username\"]",
+        "input[name=\"password\"]",
+        "button.btn.btn-primary"
+      ],
+      "workflow": [
+        {"action": "navigate"},
+        {"action": "input-typed", "field": "idnumber"},
+        {"action": "input-typed", "field": "username"},
+        {"action": "input-typed", "field": "password"},
+        {"action": "click", "target": "loginButton"}
+      ],
+      "version": 1,
+      "createdAt": "2026-03-05T20:14:22.510Z",
+      "updatedAt": "2026-04-03T13:00:00.000Z",
+      "usedBy": ["login_1772741662510"],
+      "successRate": 1.0,
+      "changeLog": [
+        {"version": 1, "date": "2026-03-05T20:14:22.510Z", "change": "Initial pattern created from login recording"}
+      ]
+    },
+    {
+      "id": "master-data-rules-20260403",
+      "type": "knowledge",
+      "module": "Master Data",
+      "source": "Knowledge/Master.docx",
+      "entities": ["Company", "Department", "Grade", "Designation", "Team", "Label", "Leave Type", "Keyword", "Public Holiday", "GPS Location"],
+      "universalRules": ["Short code max 5 chars", "Import/Export Excel", "Inactive filter", "Use as Default"],
+      "version": 1,
+      "createdAt": "2026-04-03T13:00:00.000Z",
+      "updatedAt": "2026-04-03T13:00:00.000Z",
+      "skillFile": "master-data-rules.json"
+    },
+    {
+      "id": "leave-business-rules-20260403",
+      "type": "knowledge",
+      "module": "Leave",
+      "source": "Knowledge/All Leave User Guide.docx",
+      "complexRules": ["Off Day Deduction", "Off Leave Off", "Carry Over", "Prerequisite Leave", "Max/Min Continuous Day", "Restrict Bridging"],
+      "version": 1,
+      "createdAt": "2026-04-03T13:00:00.000Z",
+      "updatedAt": "2026-04-03T13:00:00.000Z",
+      "skillFile": "leave-business-rules.json"
+    },
+    {
+      "id": "jira-test-cases-20260403",
+      "type": "knowledge",
+      "module": "All Modules",
+      "source": "Knowledge/Jira (2).csv",
+      "testCaseCount": 205,
+      "moduleBreakdown": {"OT": 59, "Leave": 55, "Attendance": 45, "Employee": 19, "Payroll": 17, "Reports": 14, "Other": 9, "Mobile": 5},
+      "version": 1,
+      "createdAt": "2026-04-03T13:00:00.000Z",
+      "updatedAt": "2026-04-03T13:00:00.000Z",
+      "skillFile": "jira-test-cases.json"
+    }
+  ],
+  "lastUpdated": "2026-04-03T13:00:00.000Z",
+  "stats": {
+    "totalPatterns": 5,
+    "jiraPatterns": 1,
+    "recordingPatterns": 1,
+    "knowledgePatterns": 3,
+    "avgVersion": 1.0
+  }
+}

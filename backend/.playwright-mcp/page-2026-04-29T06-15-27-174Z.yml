@@ -1,0 +1,832 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - text: "HELP : 09 9400 505 00"
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link [active] [ref=e10] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - button [ref=e11]:
+                - img [ref=e12]
+          - listitem [ref=e14]:
+            - link [ref=e15] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img [ref=e17]
+    - generic:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - navigation [ref=e20]:
+        - link [ref=e21] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - region "scrollable content" [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - img "Profile Image" [ref=e30]
+              - generic [ref=e31]:
+                - generic [ref=e32]: testook_HR 1
+                - text: Accountant
+            - generic [ref=e34]:
+              - button "Dashboard" [ref=e35] [cursor=pointer]:
+                - img [ref=e36]
+                - generic [ref=e38]: Dashboard
+              - button "Master" [ref=e40] [cursor=pointer]:
+                - img [ref=e41]
+                - generic [ref=e43]: Master
+                - img [ref=e45]
+              - button "Setup" [ref=e48] [cursor=pointer]:
+                - img [ref=e49]
+                - generic [ref=e51]: Setup
+                - img [ref=e53]
+              - button "Employee" [ref=e56] [cursor=pointer]:
+                - img [ref=e57]
+                - generic [ref=e59]: Employee
+                - img [ref=e61]
+              - button "Time Attendance" [ref=e64] [cursor=pointer]:
+                - img [ref=e65]
+                - generic [ref=e67]: Time Attendance
+                - img [ref=e69]
+              - button "Human Resource" [ref=e72] [cursor=pointer]:
+                - img [ref=e73]
+                - generic [ref=e75]: Human Resource
+                - img [ref=e77]
+              - button "Payroll Management" [ref=e80] [cursor=pointer]:
+                - img [ref=e81]
+                - generic [ref=e83]: Payroll Management
+                - img [ref=e85]
+              - button "User Level Management" [ref=e88] [cursor=pointer]:
+                - img [ref=e89]
+                - generic [ref=e91]: User Level Management
+                - img [ref=e93]
+              - button "System" [ref=e96] [cursor=pointer]:
+                - img [ref=e97]
+                - generic [ref=e99]: System
+                - img [ref=e101]
+              - button "Report" [ref=e104] [cursor=pointer]:
+                - img [ref=e105]
+                - generic [ref=e107]: Report
+                - img [ref=e109]
+              - button "Recruitment" [ref=e112] [cursor=pointer]:
+                - img [ref=e113]
+                - generic [ref=e115]: Recruitment
+                - img [ref=e117]
+              - button "Claim" [ref=e120] [cursor=pointer]:
+                - img [ref=e121]
+                - generic [ref=e123]: Claim
+                - img [ref=e125]
+              - button "Performance Appraisal" [ref=e128] [cursor=pointer]:
+                - img [ref=e129]
+                - generic [ref=e131]: Performance Appraisal
+                - img [ref=e133]
+              - button "Daily Tasks" [ref=e136] [cursor=pointer]:
+                - img [ref=e137]
+                - generic [ref=e139]: Daily Tasks
+                - img [ref=e141]
+              - button "Review & Appraisal" [ref=e144] [cursor=pointer]:
+                - img [ref=e145]
+                - generic [ref=e147]: Review & Appraisal
+                - img [ref=e149]
+    - generic [ref=e365]:
+      - generic [ref=e366]:
+        - generic [ref=e367]:
+          - heading "Department" [level=2] [ref=e368]
+          - list [ref=e369]:
+            - listitem [ref=e370]:
+              - link [ref=e371] [cursor=pointer]:
+                - /url: /ook#/dashboard
+                - img [ref=e372]
+            - listitem [ref=e374]:
+              - text: /
+              - link "Master" [ref=e375] [cursor=pointer]:
+                - /url: javascript:void(0);
+            - listitem [ref=e376]: / Department
+        - generic [ref=e377]:
+          - button [ref=e378] [cursor=pointer]:
+            - img [ref=e379]
+          - button [ref=e381] [cursor=pointer]:
+            - img [ref=e382]
+          - button [ref=e384] [cursor=pointer]:
+            - img [ref=e385]
+          - button [ref=e387] [cursor=pointer]:
+            - img [ref=e388]
+          - button [ref=e390] [cursor=pointer]:
+            - img [ref=e391]
+      - generic [ref=e395]:
+        - toolbar "Top toolbar" [ref=e396]:
+          - generic [ref=e397]:
+            - generic [ref=e399]:
+              - checkbox "Include Inactive" [ref=e400] [cursor=pointer]
+              - text: Include Inactive
+              - checkbox "Inactive Only" [ref=e401] [cursor=pointer]
+              - text: Inactive Only
+            - button "Columns" [ref=e403] [cursor=pointer]:
+              - generic [ref=e405]:
+                - img
+        - grid "Data table" [ref=e406]:
+          - rowgroup [ref=e414]:
+            - row "Department Order Short Code Department Name Shift Name Status Action" [ref=e415]:
+              - columnheader "Department Order" [ref=e416]:
+                - generic [ref=e417]:
+                  - generic [ref=e419]: Department Order
+                  - link "Department Order Column Menu" [ref=e421] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=e423]:
+                      - img
+              - columnheader "Short Code" [ref=e425]:
+                - generic [ref=e426]:
+                  - generic [ref=e428]: Short Code
+                  - link "Short Code Column Menu" [ref=e430] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=e432]:
+                      - img
+              - columnheader "Department Name" [ref=e434]:
+                - generic [ref=e435]:
+                  - generic [ref=e437]: Department Name
+                  - link "Department Name Column Menu" [ref=e439] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=e441]:
+                      - img
+              - columnheader "Shift Name" [ref=e443]:
+                - generic [ref=e446]: Shift Name
+              - columnheader "Status" [ref=e448]:
+                - generic [ref=e451]: Status
+              - columnheader "Action" [ref=e453]:
+                - generic [ref=e456]: Action
+          - rowgroup [ref=e466]:
+            - row "1 1 Admin smno ,New S ,DayShift-NHHM ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 Active" [ref=e467]:
+              - gridcell "1" [ref=e468]
+              - gridcell "1" [ref=e469]
+              - gridcell "Admin" [ref=e470]
+              - gridcell "smno ,New S ,DayShift-NHHM ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2" [ref=e471]
+              - gridcell "Active" [ref=e472]:
+                - generic [ref=e474]: Active
+              - gridcell [ref=e475]:
+                - generic "Edit" [ref=e476] [cursor=pointer]:
+                  - img [ref=e477]
+                - button "Delete" [ref=e479] [cursor=pointer]:
+                  - img [ref=e480]
+            - row "1 E_D1 Erica_Dept1 testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S Active" [ref=e482]:
+              - gridcell "1" [ref=e483]
+              - gridcell "E_D1" [ref=e484]
+              - gridcell "Erica_Dept1" [ref=e485]
+              - gridcell "testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S" [ref=e486]
+              - gridcell "Active" [ref=e487]:
+                - generic [ref=e489]: Active
+              - gridcell [ref=e490]:
+                - generic "Edit" [ref=e491] [cursor=pointer]:
+                  - img [ref=e492]
+                - button "Delete" [ref=e494] [cursor=pointer]:
+                  - img [ref=e495]
+            - row "5 HR Human Resources smno ,New S ,MainShift Active" [ref=e497]:
+              - gridcell "5" [ref=e498]
+              - gridcell "HR" [ref=e499]
+              - gridcell "Human Resources" [ref=e500]
+              - gridcell "smno ,New S ,MainShift" [ref=e501]
+              - gridcell "Active" [ref=e502]:
+                - generic [ref=e504]: Active
+              - gridcell [ref=e505]:
+                - generic "Edit" [ref=e506] [cursor=pointer]:
+                  - img [ref=e507]
+                - button "Delete" [ref=e509] [cursor=pointer]:
+                  - img [ref=e510]
+            - row [ref=e512]:
+              - gridcell "6" [ref=e513]
+              - gridcell "FNS" [ref=e514]
+              - gridcell "Financial and Sale Department" [ref=e515]
+              - gridcell [ref=e516]
+              - gridcell "Active" [ref=e517]:
+                - generic [ref=e519]: Active
+              - gridcell [ref=e520]:
+                - generic "Edit" [ref=e521] [cursor=pointer]:
+                  - img [ref=e522]
+                - button "Delete" [ref=e524] [cursor=pointer]:
+                  - img [ref=e525]
+            - row "8 - Admin Departments Last Test ,KLS Shift ,Test ,hywa_shift ,dev testing( not use) ,TTT shift ,bbb shift ,ccc shift ,CE - Social Afternoon ,M-SHIFT-NHHM ,Shift Test TTT ,DayShift-NHHM ,Test1111 ,CE - Social Morning ,24hrs ,24hr shift test ,ZZW_Shift_Policy ,ECPB Day Shift ,Office Shift ,nightshifttest ,CE – Afternoon Shift ,4to1 update ,shift new ,KLS Shift -1 ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,Testing for Shift ,Soe Shift ,Noti Testing ,Office Shift ,Shift Test TWN ,HLN-LeaveCount-2 ,EricaShift ,NHHM-Shift Test 1 ,NHHM Shift Test 2 ,Theint Shift ,testing shift ,ReminderShift Active" [ref=e527]:
+              - gridcell "8" [ref=e528]
+              - gridcell "-" [ref=e529]
+              - gridcell "Admin Departments" [ref=e530]
+              - gridcell "Last Test ,KLS Shift ,Test ,hywa_shift ,dev testing( not use) ,TTT shift ,bbb shift ,ccc shift ,CE - Social Afternoon ,M-SHIFT-NHHM ,Shift Test TTT ,DayShift-NHHM ,Test1111 ,CE - Social Morning ,24hrs ,24hr shift test ,ZZW_Shift_Policy ,ECPB Day Shift ,Office Shift ,nightshifttest ,CE – Afternoon Shift ,4to1 update ,shift new ,KLS Shift -1 ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,Testing for Shift ,Soe Shift ,Noti Testing ,Office Shift ,Shift Test TWN ,HLN-LeaveCount-2 ,EricaShift ,NHHM-Shift Test 1 ,NHHM Shift Test 2 ,Theint Shift ,testing shift ,ReminderShift" [ref=e531]
+              - gridcell "Active" [ref=e532]:
+                - generic [ref=e534]: Active
+              - gridcell [ref=e535]:
+                - generic "Edit" [ref=e536] [cursor=pointer]:
+                  - img [ref=e537]
+                - button "Delete" [ref=e539] [cursor=pointer]:
+                  - img [ref=e540]
+            - row [ref=e542]:
+              - gridcell "36" [ref=e543]
+              - gridcell "R&AC" [ref=e544]
+              - gridcell "Reporting & AutomationConsumer" [ref=e545]
+              - gridcell [ref=e546]
+              - gridcell "Active" [ref=e547]:
+                - generic [ref=e549]: Active
+              - gridcell [ref=e550]:
+                - generic "Edit" [ref=e551] [cursor=pointer]:
+                  - img [ref=e552]
+                - button "Delete" [ref=e554] [cursor=pointer]:
+                  - img [ref=e555]
+            - row [ref=e557]:
+              - gridcell "446" [ref=e558]
+              - gridcell "NULL" [ref=e559]
+              - gridcell "SUBDIV2" [ref=e560]
+              - gridcell [ref=e561]
+              - gridcell "Active" [ref=e562]:
+                - generic [ref=e564]: Active
+              - gridcell [ref=e565]:
+                - generic "Edit" [ref=e566] [cursor=pointer]:
+                  - img [ref=e567]
+                - button "Delete" [ref=e569] [cursor=pointer]:
+                  - img [ref=e570]
+            - row "448 SCc SCC 24hrs ,Night shift-ddd ,smno ,New S ,DayShift-NHHM ,KLS Shift -1 ,smnoshift ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,Theint Shift Active" [ref=e572]:
+              - gridcell "448" [ref=e573]
+              - gridcell "SCc" [ref=e574]
+              - gridcell "SCC" [ref=e575]
+              - gridcell "24hrs ,Night shift-ddd ,smno ,New S ,DayShift-NHHM ,KLS Shift -1 ,smnoshift ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,Theint Shift" [ref=e576]
+              - gridcell "Active" [ref=e577]:
+                - generic [ref=e579]: Active
+              - gridcell [ref=e580]:
+                - generic "Edit" [ref=e581] [cursor=pointer]:
+                  - img [ref=e582]
+                - button "Delete" [ref=e584] [cursor=pointer]:
+                  - img [ref=e585]
+            - row [ref=e587]:
+              - gridcell "519" [ref=e588]
+              - gridcell "NULL" [ref=e589]
+              - gridcell "Project Planning & Controls" [ref=e590]
+              - gridcell [ref=e591]
+              - gridcell "Active" [ref=e592]:
+                - generic [ref=e594]: Active
+              - gridcell [ref=e595]:
+                - generic "Edit" [ref=e596] [cursor=pointer]:
+                  - img [ref=e597]
+                - button "Delete" [ref=e599] [cursor=pointer]:
+                  - img [ref=e600]
+            - row [ref=e602]:
+              - gridcell "622" [ref=e603]
+              - gridcell "NULL" [ref=e604]
+              - gridcell "ServiceDept" [ref=e605]
+              - gridcell [ref=e606]
+              - gridcell "Active" [ref=e607]:
+                - generic [ref=e609]: Active
+              - gridcell [ref=e610]:
+                - generic "Edit" [ref=e611] [cursor=pointer]:
+                  - img [ref=e612]
+                - button "Delete" [ref=e614] [cursor=pointer]:
+                  - img [ref=e615]
+            - row [ref=e617]:
+              - gridcell "624" [ref=e618]
+              - gridcell "PT" [ref=e619]
+              - gridcell "Parent" [ref=e620]
+              - gridcell [ref=e621]
+              - gridcell "Active" [ref=e622]:
+                - generic [ref=e624]: Active
+              - gridcell [ref=e625]:
+                - generic "Edit" [ref=e626] [cursor=pointer]:
+                  - img [ref=e627]
+                - button "Delete" [ref=e629] [cursor=pointer]:
+                  - img [ref=e630]
+            - row [ref=e632]:
+              - gridcell "656" [ref=e633]
+              - gridcell "HM1" [ref=e634]
+              - gridcell "Mobile HR" [ref=e635]
+              - gridcell [ref=e636]
+              - gridcell "Active" [ref=e637]:
+                - generic [ref=e639]: Active
+              - gridcell [ref=e640]:
+                - generic "Edit" [ref=e641] [cursor=pointer]:
+                  - img [ref=e642]
+                - button "Delete" [ref=e644] [cursor=pointer]:
+                  - img [ref=e645]
+            - row [ref=e647]:
+              - gridcell "657" [ref=e648]
+              - gridcell "HMA" [ref=e649]
+              - gridcell "Mobile Admin" [ref=e650]
+              - gridcell [ref=e651]
+              - gridcell "Active" [ref=e652]:
+                - generic [ref=e654]: Active
+              - gridcell [ref=e655]:
+                - generic "Edit" [ref=e656] [cursor=pointer]:
+                  - img [ref=e657]
+                - button "Delete" [ref=e659] [cursor=pointer]:
+                  - img [ref=e660]
+            - row [ref=e662]:
+              - gridcell "658" [ref=e663]
+              - gridcell "MS" [ref=e664]
+              - gridcell "Mobile Staff" [ref=e665]
+              - gridcell [ref=e666]
+              - gridcell "Active" [ref=e667]:
+                - generic [ref=e669]: Active
+              - gridcell [ref=e670]:
+                - generic "Edit" [ref=e671] [cursor=pointer]:
+                  - img [ref=e672]
+                - button "Delete" [ref=e674] [cursor=pointer]:
+                  - img [ref=e675]
+            - row [ref=e677]:
+              - gridcell "664" [ref=e678]
+              - gridcell "P" [ref=e679]
+              - gridcell "PNewDept" [ref=e680]
+              - gridcell [ref=e681]
+              - gridcell "Active" [ref=e682]:
+                - generic [ref=e684]: Active
+              - gridcell [ref=e685]:
+                - generic "Edit" [ref=e686] [cursor=pointer]:
+                  - img [ref=e687]
+                - button "Delete" [ref=e689] [cursor=pointer]:
+                  - img [ref=e690]
+            - row [ref=e692]:
+              - gridcell "666" [ref=e693]
+              - gridcell "sscad" [ref=e694]
+              - gridcell "SameShortCodeActiveDept1" [ref=e695]
+              - gridcell [ref=e696]
+              - gridcell "Active" [ref=e697]:
+                - generic [ref=e699]: Active
+              - gridcell [ref=e700]:
+                - generic "Edit" [ref=e701] [cursor=pointer]:
+                  - img [ref=e702]
+                - button "Delete" [ref=e704] [cursor=pointer]:
+                  - img [ref=e705]
+            - row [ref=e707]:
+              - gridcell "670" [ref=e708]
+              - gridcell "670" [ref=e709]
+              - gridcell "670" [ref=e710]
+              - gridcell [ref=e711]
+              - gridcell "Active" [ref=e712]:
+                - generic [ref=e714]: Active
+              - gridcell [ref=e715]:
+                - generic "Edit" [ref=e716] [cursor=pointer]:
+                  - img [ref=e717]
+                - button "Delete" [ref=e719] [cursor=pointer]:
+                  - img [ref=e720]
+            - row [ref=e722]:
+              - gridcell "689" [ref=e723]
+              - gridcell "NID" [ref=e724]
+              - gridcell "NewInComingDepartment002" [ref=e725]
+              - gridcell [ref=e726]
+              - gridcell "Active" [ref=e727]:
+                - generic [ref=e729]: Active
+              - gridcell [ref=e730]:
+                - generic "Edit" [ref=e731] [cursor=pointer]:
+                  - img [ref=e732]
+                - button "Delete" [ref=e734] [cursor=pointer]:
+                  - img [ref=e735]
+            - row [ref=e737]:
+              - gridcell "692" [ref=e738]
+              - gridcell "NULL" [ref=e739]
+              - gridcell "New50" [ref=e740]
+              - gridcell [ref=e741]
+              - gridcell "Active" [ref=e742]:
+                - generic [ref=e744]: Active
+              - gridcell [ref=e745]:
+                - generic "Edit" [ref=e746] [cursor=pointer]:
+                  - img [ref=e747]
+                - button "Delete" [ref=e749] [cursor=pointer]:
+                  - img [ref=e750]
+            - row [ref=e752]:
+              - gridcell "695" [ref=e753]
+              - gridcell "NULL" [ref=e754]
+              - gridcell "Hello Mobile Admin" [ref=e755]
+              - gridcell [ref=e756]
+              - gridcell "Active" [ref=e757]:
+                - generic [ref=e759]: Active
+              - gridcell [ref=e760]:
+                - generic "Edit" [ref=e761] [cursor=pointer]:
+                  - img [ref=e762]
+                - button "Delete" [ref=e764] [cursor=pointer]:
+                  - img [ref=e765]
+            - row [ref=e767]:
+              - gridcell "696" [ref=e768]
+              - gridcell "HMS" [ref=e769]
+              - gridcell "Hello Mobile Staff" [ref=e770]
+              - gridcell [ref=e771]
+              - gridcell "Active" [ref=e772]:
+                - generic [ref=e774]: Active
+              - gridcell [ref=e775]:
+                - generic "Edit" [ref=e776] [cursor=pointer]:
+                  - img [ref=e777]
+                - button "Delete" [ref=e779] [cursor=pointer]:
+                  - img [ref=e780]
+            - row [ref=e782]:
+              - gridcell "703" [ref=e783]
+              - gridcell "YGT" [ref=e784]
+              - gridcell "YG Test" [ref=e785]
+              - gridcell [ref=e786]
+              - gridcell "Active" [ref=e787]:
+                - generic [ref=e789]: Active
+              - gridcell [ref=e790]:
+                - generic "Edit" [ref=e791] [cursor=pointer]:
+                  - img [ref=e792]
+                - button "Delete" [ref=e794] [cursor=pointer]:
+                  - img [ref=e795]
+            - row [ref=e797]:
+              - gridcell "709" [ref=e798]
+              - gridcell "NULL" [ref=e799]
+              - gridcell "Amazing1" [ref=e800]
+              - gridcell [ref=e801]
+              - gridcell "Active" [ref=e802]:
+                - generic [ref=e804]: Active
+              - gridcell [ref=e805]:
+                - generic "Edit" [ref=e806] [cursor=pointer]:
+                  - img [ref=e807]
+                - button "Delete" [ref=e809] [cursor=pointer]:
+                  - img [ref=e810]
+            - row [ref=e812]:
+              - gridcell "726" [ref=e813]
+              - gridcell "2" [ref=e814]
+              - gridcell "aug18test" [ref=e815]
+              - gridcell [ref=e816]
+              - gridcell "Active" [ref=e817]:
+                - generic [ref=e819]: Active
+              - gridcell [ref=e820]:
+                - generic "Edit" [ref=e821] [cursor=pointer]:
+                  - img [ref=e822]
+                - button "Delete" [ref=e824] [cursor=pointer]:
+                  - img [ref=e825]
+            - row [ref=e827]:
+              - gridcell "727" [ref=e828]
+              - gridcell "FF" [ref=e829]
+              - gridcell "FF FF" [ref=e830]
+              - gridcell [ref=e831]
+              - gridcell "Active" [ref=e832]:
+                - generic [ref=e834]: Active
+              - gridcell [ref=e835]:
+                - generic "Edit" [ref=e836] [cursor=pointer]:
+                  - img [ref=e837]
+                - button "Delete" [ref=e839] [cursor=pointer]:
+                  - img [ref=e840]
+            - row [ref=e842]:
+              - gridcell "729" [ref=e843]
+              - gridcell "123" [ref=e844]
+              - gridcell "Marketing" [ref=e845]
+              - gridcell [ref=e846]
+              - gridcell "Active" [ref=e847]:
+                - generic [ref=e849]: Active
+              - gridcell [ref=e850]:
+                - generic "Edit" [ref=e851] [cursor=pointer]:
+                  - img [ref=e852]
+                - button "Delete" [ref=e854] [cursor=pointer]:
+                  - img [ref=e855]
+            - row [ref=e857]:
+              - gridcell "730" [ref=e858]
+              - gridcell "NULL" [ref=e859]
+              - gridcell "911" [ref=e860]
+              - gridcell [ref=e861]
+              - gridcell "Active" [ref=e862]:
+                - generic [ref=e864]: Active
+              - gridcell [ref=e865]:
+                - generic "Edit" [ref=e866] [cursor=pointer]:
+                  - img [ref=e867]
+                - button "Delete" [ref=e869] [cursor=pointer]:
+                  - img [ref=e870]
+            - row [ref=e872]:
+              - gridcell "736" [ref=e873]
+              - gridcell "NULL" [ref=e874]
+              - gridcell "IT (nova)" [ref=e875]
+              - gridcell [ref=e876]
+              - gridcell "Active" [ref=e877]:
+                - generic [ref=e879]: Active
+              - gridcell [ref=e880]:
+                - generic "Edit" [ref=e881] [cursor=pointer]:
+                  - img [ref=e882]
+                - button "Delete" [ref=e884] [cursor=pointer]:
+                  - img [ref=e885]
+            - row [ref=e887]:
+              - gridcell "745" [ref=e888]
+              - gridcell "NULL" [ref=e889]
+              - gridcell "26Dept" [ref=e890]
+              - gridcell [ref=e891]
+              - gridcell "Active" [ref=e892]:
+                - generic [ref=e894]: Active
+              - gridcell [ref=e895]:
+                - generic "Edit" [ref=e896] [cursor=pointer]:
+                  - img [ref=e897]
+                - button "Delete" [ref=e899] [cursor=pointer]:
+                  - img [ref=e900]
+            - row [ref=e902]:
+              - gridcell "746" [ref=e903]
+              - gridcell "NULL" [ref=e904]
+              - gridcell "10/02/2023 11" [ref=e905]
+              - gridcell [ref=e906]
+              - gridcell "Active" [ref=e907]:
+                - generic [ref=e909]: Active
+              - gridcell [ref=e910]:
+                - generic "Edit" [ref=e911] [cursor=pointer]:
+                  - img [ref=e912]
+                - button "Delete" [ref=e914] [cursor=pointer]:
+                  - img [ref=e915]
+            - row "2221 SD Software Development OOK-WK-SP ,WK-OFF ,shift new ,KLS Shift -1 ,smnoshift ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,Theint Shift ,testing shift ,ReminderShift ,rm ,1NU ,2NU ,3NU ,4NU ,DayShift-NHHM ,smno ,New S Active" [ref=e917]:
+              - gridcell "2221" [ref=e918]
+              - gridcell "SD" [ref=e919]
+              - gridcell "Software Development" [ref=e920]
+              - gridcell "OOK-WK-SP ,WK-OFF ,shift new ,KLS Shift -1 ,smnoshift ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,Theint Shift ,testing shift ,ReminderShift ,rm ,1NU ,2NU ,3NU ,4NU ,DayShift-NHHM ,smno ,New S" [ref=e921]
+              - gridcell "Active" [ref=e922]:
+                - generic [ref=e924]: Active
+              - gridcell [ref=e925]:
+                - generic "Edit" [ref=e926] [cursor=pointer]:
+                  - img [ref=e927]
+                - button "Delete" [ref=e929] [cursor=pointer]:
+                  - img [ref=e930]
+            - row [ref=e932]:
+              - gridcell "4001" [ref=e933]
+              - gridcell "004" [ref=e934]
+              - gridcell "hywa" [ref=e935]
+              - gridcell [ref=e936]
+              - gridcell "Active" [ref=e937]:
+                - generic [ref=e939]: Active
+              - gridcell [ref=e940]:
+                - generic "Edit" [ref=e941] [cursor=pointer]:
+                  - img [ref=e942]
+                - button "Delete" [ref=e944] [cursor=pointer]:
+                  - img [ref=e945]
+            - row [ref=e947]:
+              - gridcell "75424" [ref=e948]
+              - gridcell "NULL" [ref=e949]
+              - gridcell "DisDept" [ref=e950]
+              - gridcell [ref=e951]
+              - gridcell "Active" [ref=e952]:
+                - generic [ref=e954]: Active
+              - gridcell [ref=e955]:
+                - generic "Edit" [ref=e956] [cursor=pointer]:
+                  - img [ref=e957]
+                - button "Delete" [ref=e959] [cursor=pointer]:
+                  - img [ref=e960]
+            - row [ref=e962]:
+              - gridcell "123125" [ref=e963]
+              - gridcell "H-001" [ref=e964]
+              - gridcell "HLN-Dept-1" [ref=e965]
+              - gridcell [ref=e966]
+              - gridcell "Active Default" [ref=e967]:
+                - generic [ref=e968]:
+                  - generic [ref=e969]: Active
+                  - generic [ref=e970]: Default
+              - gridcell [ref=e971]:
+                - generic "Edit" [ref=e972] [cursor=pointer]:
+                  - img [ref=e973]
+                - button "Delete" [ref=e975] [cursor=pointer]:
+                  - img [ref=e976]
+            - row [ref=e978]:
+              - gridcell "123126" [ref=e979]
+              - gridcell "H-002" [ref=e980]
+              - gridcell "HLN-Dept-2" [ref=e981]
+              - gridcell [ref=e982]
+              - gridcell "Active" [ref=e983]:
+                - generic [ref=e985]: Active
+              - gridcell [ref=e986]:
+                - generic "Edit" [ref=e987] [cursor=pointer]:
+                  - img [ref=e988]
+                - button "Delete" [ref=e990] [cursor=pointer]:
+                  - img [ref=e991]
+            - row [ref=e993]:
+              - gridcell "123127" [ref=e994]
+              - gridcell "PSM101" [ref=e995]
+              - gridcell "PSM Department" [ref=e996]
+              - gridcell [ref=e997]
+              - gridcell "Active" [ref=e998]:
+                - generic [ref=e1000]: Active
+              - gridcell [ref=e1001]:
+                - generic "Edit" [ref=e1002] [cursor=pointer]:
+                  - img [ref=e1003]
+                - button "Delete" [ref=e1005] [cursor=pointer]:
+                  - img [ref=e1006]
+            - row [ref=e1008]:
+              - gridcell "123128" [ref=e1009]
+              - gridcell "PSM102" [ref=e1010]
+              - gridcell "PSM Department 1" [ref=e1011]
+              - gridcell [ref=e1012]
+              - gridcell "Active" [ref=e1013]:
+                - generic [ref=e1015]: Active
+              - gridcell [ref=e1016]:
+                - generic "Edit" [ref=e1017] [cursor=pointer]:
+                  - img [ref=e1018]
+                - button "Delete" [ref=e1020] [cursor=pointer]:
+                  - img [ref=e1021]
+            - row [ref=e1023]:
+              - gridcell "123130" [ref=e1024]
+              - gridcell "123130" [ref=e1025]
+              - gridcell "smn_dept" [ref=e1026]
+              - gridcell [ref=e1027]
+              - gridcell "Active" [ref=e1028]:
+                - generic [ref=e1030]: Active
+              - gridcell [ref=e1031]:
+                - generic "Edit" [ref=e1032] [cursor=pointer]:
+                  - img [ref=e1033]
+                - button "Delete" [ref=e1035] [cursor=pointer]:
+                  - img [ref=e1036]
+            - row [ref=e1038]:
+              - gridcell "123141" [ref=e1039]
+              - gridcell "NCM Testing" [ref=e1040]
+              - gridcell "NCM Testing" [ref=e1041]
+              - gridcell [ref=e1042]
+              - gridcell "Active" [ref=e1043]:
+                - generic [ref=e1045]: Active
+              - gridcell [ref=e1046]:
+                - generic "Edit" [ref=e1047] [cursor=pointer]:
+                  - img [ref=e1048]
+                - button "Delete" [ref=e1050] [cursor=pointer]:
+                  - img [ref=e1051]
+            - row "123152 NULL AbReport KLS Shift -1 ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,24hrs ,Night shift-ddd ,Theint Shift ,DayShift-NHHM ,Night Shift ECPB Active" [ref=e1053]:
+              - gridcell "123152" [ref=e1054]
+              - gridcell "NULL" [ref=e1055]
+              - gridcell "AbReport" [ref=e1056]
+              - gridcell "KLS Shift -1 ,KhaingShift ,Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,24hrs ,Night shift-ddd ,Theint Shift ,DayShift-NHHM ,Night Shift ECPB" [ref=e1057]
+              - gridcell "Active" [ref=e1058]:
+                - generic [ref=e1060]: Active
+              - gridcell [ref=e1061]:
+                - generic "Edit" [ref=e1062] [cursor=pointer]:
+                  - img [ref=e1063]
+                - button "Delete" [ref=e1065] [cursor=pointer]:
+                  - img [ref=e1066]
+            - row [ref=e1068]:
+              - gridcell "123153" [ref=e1069]
+              - gridcell "smno" [ref=e1070]
+              - gridcell "smno-dept1" [ref=e1071]
+              - gridcell [ref=e1072]
+              - gridcell "Active" [ref=e1073]:
+                - generic [ref=e1075]: Active
+              - gridcell [ref=e1076]:
+                - generic "Edit" [ref=e1077] [cursor=pointer]:
+                  - img [ref=e1078]
+                - button "Delete" [ref=e1080] [cursor=pointer]:
+                  - img [ref=e1081]
+            - row [ref=e1083]:
+              - gridcell "123154" [ref=e1084]
+              - gridcell "NULL" [ref=e1085]
+              - gridcell "smno-dept2" [ref=e1086]
+              - gridcell [ref=e1087]
+              - gridcell "Active" [ref=e1088]:
+                - generic [ref=e1090]: Active
+              - gridcell [ref=e1091]:
+                - generic "Edit" [ref=e1092] [cursor=pointer]:
+                  - img [ref=e1093]
+                - button "Delete" [ref=e1095] [cursor=pointer]:
+                  - img [ref=e1096]
+            - row [ref=e1098]:
+              - gridcell "123161" [ref=e1099]
+              - gridcell "kmt" [ref=e1100]
+              - gridcell "testdepartment_kmt" [ref=e1101]
+              - gridcell [ref=e1102]
+              - gridcell "Active Default" [ref=e1103]:
+                - generic [ref=e1104]:
+                  - generic [ref=e1105]: Active
+                  - generic [ref=e1106]: Default
+              - gridcell [ref=e1107]:
+                - generic "Edit" [ref=e1108] [cursor=pointer]:
+                  - img [ref=e1109]
+                - button "Delete" [ref=e1111] [cursor=pointer]:
+                  - img [ref=e1112]
+            - row [ref=e1114]:
+              - gridcell "123162" [ref=e1115]
+              - gridcell "kst" [ref=e1116]
+              - gridcell "testdepartment_kst" [ref=e1117]
+              - gridcell [ref=e1118]
+              - gridcell "Active" [ref=e1119]:
+                - generic [ref=e1121]: Active
+              - gridcell [ref=e1122]:
+                - generic "Edit" [ref=e1123] [cursor=pointer]:
+                  - img [ref=e1124]
+                - button "Delete" [ref=e1126] [cursor=pointer]:
+                  - img [ref=e1127]
+            - row "123163 yha testdepartment_yha Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,24hrs ,testshift ,Ye Htet ,DayShift-NHHM Active" [ref=e1129]:
+              - gridcell "123163" [ref=e1130]
+              - gridcell "yha" [ref=e1131]
+              - gridcell "testdepartment_yha" [ref=e1132]
+              - gridcell "Morning ,NOC Split shift ,NOC - Evening ,NOC Split Shift ,Test LLO ,NHHMShitTest4 ,NHHMShiftTest5 ,testkmt shift ,Rank 1 ,CE Social Shift ,CE Social Night Shift ,testing morning shift ,testing evening shift ,Shift Test 2 ,smno ,New S ,24hrs ,testshift ,Ye Htet ,DayShift-NHHM" [ref=e1133]
+              - gridcell "Active" [ref=e1134]:
+                - generic [ref=e1136]: Active
+              - gridcell [ref=e1137]:
+                - generic "Edit" [ref=e1138] [cursor=pointer]:
+                  - img [ref=e1139]
+                - button "Delete" [ref=e1141] [cursor=pointer]:
+                  - img [ref=e1142]
+            - row [ref=e1144]:
+              - gridcell "123164" [ref=e1145]
+              - gridcell "user1" [ref=e1146]
+              - gridcell "testdepartment_user1" [ref=e1147]
+              - gridcell [ref=e1148]
+              - gridcell "Active" [ref=e1149]:
+                - generic [ref=e1151]: Active
+              - gridcell [ref=e1152]:
+                - generic "Edit" [ref=e1153] [cursor=pointer]:
+                  - img [ref=e1154]
+                - button "Delete" [ref=e1156] [cursor=pointer]:
+                  - img [ref=e1157]
+            - row [ref=e1159]:
+              - gridcell "123165" [ref=e1160]
+              - gridcell "user2" [ref=e1161]
+              - gridcell "testdepartment_user2" [ref=e1162]
+              - gridcell [ref=e1163]
+              - gridcell "Active" [ref=e1164]:
+                - generic [ref=e1166]: Active
+              - gridcell [ref=e1167]:
+                - generic "Edit" [ref=e1168] [cursor=pointer]:
+                  - img [ref=e1169]
+                - button "Delete" [ref=e1171] [cursor=pointer]:
+                  - img [ref=e1172]
+            - row [ref=e1174]:
+              - gridcell "123167" [ref=e1175]
+              - gridcell "kmtexc" [ref=e1176]
+              - gridcell "testdepartment_kmt(excel)" [ref=e1177]
+              - gridcell [ref=e1178]
+              - gridcell "Active" [ref=e1179]:
+                - generic [ref=e1181]: Active
+              - gridcell [ref=e1182]:
+                - generic "Edit" [ref=e1183] [cursor=pointer]:
+                  - img [ref=e1184]
+                - button "Delete" [ref=e1186] [cursor=pointer]:
+                  - img [ref=e1187]
+            - row [ref=e1189]:
+              - gridcell "123176" [ref=e1190]
+              - gridcell "owym" [ref=e1191]
+              - gridcell "testdepartment_owym" [ref=e1192]
+              - gridcell [ref=e1193]
+              - gridcell "Active" [ref=e1194]:
+                - generic [ref=e1196]: Active
+              - gridcell [ref=e1197]:
+                - generic "Edit" [ref=e1198] [cursor=pointer]:
+                  - img [ref=e1199]
+                - button "Delete" [ref=e1201] [cursor=pointer]:
+                  - img [ref=e1202]
+            - row [ref=e1204]:
+              - gridcell "123177" [ref=e1205]
+              - gridcell "owym" [ref=e1206]
+              - gridcell "testdepartment_argu" [ref=e1207]
+              - gridcell [ref=e1208]
+              - gridcell "Active" [ref=e1209]:
+                - generic [ref=e1211]: Active
+              - gridcell [ref=e1212]:
+                - generic "Edit" [ref=e1213] [cursor=pointer]:
+                  - img [ref=e1214]
+                - button "Delete" [ref=e1216] [cursor=pointer]:
+                  - img [ref=e1217]
+        - application "Page navigation, page 1 of 6" [ref=e1219]:
+          - generic [ref=e1221]:
+            - text: Page
+            - spinbutton "Type a page number" [ref=e1223]: "1"
+            - text: of 6
+          - generic [ref=e1224]: 1 - 50 of 256 items
+          - generic [ref=e1225]:
+            - button "Go to the first page" [disabled]:
+              - generic:
+                - generic:
+                  - img
+            - button "Go to the previous page" [disabled]:
+              - generic:
+                - generic:
+                  - img
+          - generic [ref=e1226]:
+            - combobox "items per page" [ref=e1227] [cursor=pointer]:
+              - generic [ref=e1229]: "50"
+              - button "Select" [ref=e1230]:
+                - generic [ref=e1232]:
+                  - img
+            - text: items per page
+          - generic [ref=e1233]:
+            - button "Go to the next page" [ref=e1234] [cursor=pointer]:
+              - generic [ref=e1236]:
+                - img
+            - button "Go to the last page" [ref=e1237] [cursor=pointer]:
+              - generic [ref=e1239]:
+                - img
+      - generic [ref=e1240]:
+        - generic [ref=e1241]:
+          - heading "Organization Structure" [level=3] [ref=e1242]:
+            - strong [ref=e1243]: Organization Structure
+          - button [ref=e1244] [cursor=pointer]:
+            - img [ref=e1245]
+          - button [ref=e1248] [cursor=pointer]:
+            - img [ref=e1249]
+        - region "scrollable content" [ref=e1255]:
+          - tree [ref=e1258]:
+            - treeitem "Win Htike Hein" [expanded] [level=1] [ref=e1259]:
+              - generic [ref=e1260]:
+                - generic [ref=e1263] [cursor=pointer]:
+                  - img
+                - generic "Win Htike Hein" [ref=e1266]:
+                  - img [ref=e1267]
+                  - text: Win Htike Hein
+              - group [ref=e1269]:
+                - treeitem "company_kmt" [expanded] [level=2] [ref=e1270]:
+                  - generic [ref=e1271]:
+                    - generic [ref=e1274] [cursor=pointer]:
+                      - img
+                    - generic "company_kmt" [ref=e1277]:
+                      - img [ref=e1278]
+                      - text: company_kmt
+                  - group [ref=e1280]:
+                    - treeitem "testdepartment_kmt" [level=3] [ref=e1281]:
+                      - generic [ref=e1282]:
+                        - generic [ref=e1285] [cursor=pointer]:
+                          - img
+                        - generic "testdepartment_kmt" [ref=e1288]:
+                          - img [ref=e1289]
+                          - text: testdepartment_kmt
+                    - treeitem "Testdepartment_C" [level=3] [ref=e1291]:
+                      - generic "Testdepartment_C" [ref=e1295]:
+                        - img [ref=e1296]
+                        - text: Testdepartment_C
+                    - treeitem "Contract Department" [level=3] [ref=e1298]:
+                      - generic "Contract Department" [ref=e1302]:
+                        - img [ref=e1303]
+                        - text: Contract Department
+  - text: 

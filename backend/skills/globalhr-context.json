@@ -1,0 +1,18 @@
+{
+    "description": "Business logic context for GlobalHR Cloud - helps AI understand the system's modules and workflows",
+    "modules": {
+        "login": "Authentication module at /login. Requires username (or idnumber) and password. Success redirects to Dashboard.",
+        "dashboard": "Landing page after login. Shows attendance summary, leave balance, and quick actions.",
+        "leave": "Leave management module. Submit leave requests with type, date range, and half-day options. Balance validation required.",
+        "attendance": "Attendance tracking. Shows monthly summaries, absent days, and check-in/out records.",
+        "payroll": "Payroll processing. Calculates salary with OT, allowances, and deductions."
+    },
+    "apiPatterns": {
+        "GetMonthyAttendanceSummaryAbsentDay": "Returns monthly attendance absent day count for an employee",
+        "GetAttendanceSummaryCount": "Returns attendance summary statistics (present, absent, late counts)",
+        "GetAllLeavePolicyForGroupPolicy": "Returns all leave policies for a group, used in leave configuration",
+        "GetLeavepolicyByID": "Returns specific leave policy details by ID"
+    },
+    "uiFramework": "Angular + Kendo UI",
+    "template": "### GlobalHR Business Logic Context\nYou are generating automated tests for \"GlobalHR Cloud\", an enterprise-grade HR management software built with Angular and Kendo UI.\n\n## Authentication Module (`/login`)\n- Requires valid `username` (or idnumber) and `password`.\n- Successful login redirects to the Dashboard (`/dashboard`).\n- Use `process.env.TEST_USER` and `process.env.TEST_PASS` for credentials.\n\n## Dashboard & Page Extractions\n- If you see a `page_extraction` event, use the provided components to understand available UI elements.\n- Only generate code for explicit `click` or `input` actions, not every extracted element.\n\n## API Endpoints to Monitor\n- `GetMonthyAttendanceSummaryAbsentDay` — Attendance absent day count\n- `GetAttendanceSummaryCount` — Attendance statistics\n- `GetAllLeavePolicyForGroupPolicy` — Leave policy list\n- `GetLeavepolicyByID` — Specific leave policy details\nWhen these APIs appear in fetch events, generate `page.waitForResponse()` assertions.\n\n## Reliability & Wait Strategies\n- GlobalHR may have loading spinners during API calls.\n- Rely on Playwright's auto-waiting. Do NOT use `page.waitForTimeout()` unless absolutely necessary.\n- For dynamic Kendo components, ensure the element is visible before interacting.\n\n## Environment Structure\n- Testing: `https://test.globalhr.com.mm/{CUSTOMER_ID}/...`\n- UAT: `https://uat.globalhr.com.mm/{CUSTOMER_ID}/...`\n- Live: `https://globalhr.com.mm/{CUSTOMER_ID}/...`\nNEVER hardcode these URLs. Use `process.env.BASE_URL` and `process.env.CUSTOMER_ID`."
+}

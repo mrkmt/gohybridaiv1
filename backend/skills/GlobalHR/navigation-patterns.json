@@ -1,0 +1,136 @@
+{
+  "description": "Navigation patterns for GlobalHR Cloud UI - extracted from Master Discovery Report",
+  "source": "No-Code Automation Logic Flow Prompt, 194-step recorded journey",
+  "version": "1.0.0",
+
+  "hamburgerMenu": {
+    "selector": ".hambuger",
+    "description": "Mobile/collapsed hamburger menu trigger"
+  },
+
+  "mainMenu": {
+    "selector": ".text-truncate.d-inline-block a",
+    "matchBy": "text content",
+    "description": "Top-level menu items in left sidebar",
+    "examples": ["Time Attendance", "Employee", "Leave", "Master"]
+  },
+
+  "subMenu": {
+    "selector": ".list-group-item.text-truncate",
+    "matchBy": "text content",
+    "description": "Sub-menu items under main menu categories",
+    "examples": ["Attendance Lock", "Leave Request", "Leave Approve", "OT Request", "Department", "Grade"]
+  },
+
+  "buttonPatterns": {
+    "addNew": {
+      "selector": ".btn.btn-primary.me-2.ms-0, button[title*='Add' i], button[aria-label*='Add' i], .btn.btn-primary:has-text('Add New'), .btn.btn-primary:has-text('Add')",
+      "description": "Primary action button to create new records (icon-first, then text fallback)",
+      "note": "Many 'Add New' buttons are icon-only (+ icon). has-text() selectors are fallback only."
+    },
+    "save": {
+      "selector": ".btn.btn-success.rounded-pill:has-text('Save'), button[title*='Save' i], button[aria-label*='Save' i]",
+      "description": "Save/Submit button in forms"
+    },
+    "cancel": {
+      "selector": ".btn.btn-light.rounded-pill:has-text('Cancel'), .btn.btn-outline-secondary:has-text('Cancel'), button[title*='Cancel' i]",
+      "description": "Cancel button in forms/modals"
+    },
+    "preview": {
+      "selector": ".btn.btn-success.btn-sm.rounded:has-text('Preview'), button[title*='Preview' i]",
+      "description": "Preview button for filtering/viewing data"
+    },
+    "approve": {
+      "selector": ".btn.btn-success.rounded-pill:has-text('Approve'), button[title*='Approve' i]",
+      "description": "Approve action button"
+    },
+    "confirm": {
+      "selector": ".btn.btn-success.rounded-pill:has-text('Yes'), .btn.btn-success.rounded-pill:has-text('Confirm'), button[title*='Confirm' i]",
+      "description": "Confirmation button in dialogs"
+    },
+    "ok": {
+      "selector": ".btn.btn-success.rounded-pill:has-text('Ok'), .btn.btn-success.rounded-pill:has-text('OK'), button[title*='Ok' i]",
+      "description": "OK button for success/info modals"
+    },
+    "select": {
+      "selector": ".btn.btn-success.rounded-pill:has-text('Select'), button[title*='Select' i]",
+      "description": "Select button in employee/item picker popups"
+    },
+    "export": {
+      "selector": "button:has-text('Export'), .btn:has-text('Export'), button[title*='Export' i]",
+      "description": "Export data to Excel/PDF"
+    },
+    "edit": {
+      "selector": "button[title='Edit'], .k-master-row a.btn[title='Edit'], .k-master-row .fa-edit, .fa-pencil",
+      "description": "Edit icon in grid rows (icon-only — title attribute first)"
+    },
+    "delete": {
+      "selector": "button[title='Delete'], .k-master-row a.btn[title='Delete'], .k-master-row .fa-trash",
+      "description": "Delete icon in grid rows (icon-only — title attribute first)"
+    }
+  },
+
+  "componentSelectors": {
+    "checkbox": {
+      "label": ".k-checkbox-label",
+      "input": ".k-checkbox",
+      "checkAll": "#checkall .k-checkbox",
+      "matchBy": "label text content"
+    },
+    "textarea": {
+      "selector": "textarea[formControlName]",
+      "fallback": "textarea.k-input-inner"
+    },
+    "dropdown": {
+      "trigger": ".k-input-value-text",
+      "container": "kendo-dropdownlist",
+      "option": ".k-list-item, li.k-item"
+    },
+    "datepicker": {
+      "calendarIcon": ".k-svg-i-calendar.k-button-icon",
+      "dayLink": ".k-link",
+      "matchDay": "text content (day number)"
+    },
+    "radioButton": {
+      "label": ".k-radio-label",
+      "input": ".k-radio",
+      "matchBy": "label text content"
+    },
+    "timepicker": {
+      "input": ".k-input-inner (inside timepicker container)",
+      "navigation": "ArrowUp/ArrowDown keyboard events"
+    },
+    "grid": {
+      "container": "kendo-grid, .k-grid",
+      "row": ".k-master-row, .k-table-row",
+      "cell": ".k-table-td",
+      "rowCheckbox": ".k-checkbox (inside row)",
+      "headerCheckbox": "#checkall .k-checkbox"
+    },
+    "modal": {
+      "container": "kendo-dialog, .k-dialog",
+      "closeButton": ".k-dialog-close, .btn-close"
+    },
+    "toast": {
+      "success": ".alert-success, .toast, .k-notification-success",
+      "error": ".alert-danger, .k-notification-error"
+    },
+    "loadingMask": ".k-loading-mask, .k-i-loading"
+  },
+
+  "waitStrategies": {
+    "afterSave": "Wait for success toast or modal (5s timeout)",
+    "afterNavigation": "Wait for .k-grid or main content to load",
+    "afterDropdownClick": "Wait for .k-animation-container to appear",
+    "afterFilterApply": "Wait for grid to refresh (loading mask disappears)",
+    "retryOnFailure": "Retry once after 2 seconds with scroll into view"
+  },
+
+  "failureRecovery": {
+    "elementNotFound": "Retry once after 2s with scrollIntoView",
+    "modalNotAppeared": "Wait 5s, check for validation toasts",
+    "stepFailedTwice": "Capture DOM snapshot, continue to next flow",
+    "consecutiveFailures": "After 3 consecutive module failures, stop suite and alert",
+    "timepickerIssue": "Use keyboard ArrowUp/ArrowDown instead of direct input"
+  }
+}

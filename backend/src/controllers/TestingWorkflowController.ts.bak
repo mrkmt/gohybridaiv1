@@ -1,0 +1,2159 @@
+/**
+ * TestingWorkflowController
+ *
+ * Main controller for the Jira testing workflow.
+ * Handles chat mentions, test case management, execution, and results.
+ * Multi-user: all sessions scoped by userId.
+ */
+
+import { Request, Response } from 'express';
+import * as path from 'path';
+import { MenuDiscoveryService } from '../services/MenuDiscoveryService';
+import { appLogger } from '../utils/logger';
+import { ChatMentionService } from '../services/ChatMentionService';
+import { BugReproductionService } from '../services/BugReproductionService';
+import { JiraTransitionService } from '../services/jira/JiraTransitionService';
+import { TestCaseGeneratorService, TestCase } from '../services/generation/TestCaseGeneratorService';
+import { TestExecutionService, TestEnvironment, TestResult } from '../services/execution/TestExecutionService';
+import { JiraUploadService } from '../services/jira/JiraUploadService';
+import { TestSessionCacheService, TestSession } from '../services/session/TestSessionCacheService';
+import { JiraTicketOrchestrator } from '../services/JiraTicketOrchestrator';
+import { getJiraAxios } from '../utils/jiraAxios';
+import { DbClient } from '../services/shared/TelemetryService';
+import { writeAuditLog } from '../../api/middleware/authMiddleware';
+import { ProcessProgressService } from '../services/ProcessProgressService';
+
+import { successResponse, errorResponse, validationError, notFoundError, internalError, conflictError } from '../../api/utils/responseHelpers';
+
+export class TestingWorkflowController {
+    private static pool: DbClient | null = null;
+
+    static setPool(dbPool: DbClient): void {
+        this.pool = dbPool;
+    }
+
+    /**
+     * Get the authenticated user ID from the request.
+     * Routes are expected to be protected before controller entry.
+     */
+    private static getUserId(req: any): string {
+        const userId = (req as any).user?.id || req.body?.userId;
+        if (!userId) {
+            throw new Error('Authenticated user context is required');
+        }
+        return userId;
+    }
+
+    private static async audit(req: any, action: string, resourceType: string, resourceId: string, details?: Record<string, unknown>) {
+        if (this.pool) {
+            writeAuditLog(this.pool, this.getUserId(req), action, resourceType, resourceId, details).catch(() => {});
+        }
+    }
+
+    /**
+     * POST /api/testing/chat/mention
+     */
+    static async processChatMention(req: Request, res: Response): Promise<void> {
+        try {
+            console.log(`[ChatMention] <<< INCOMING: body keys=${JSON.stringify(Object.keys(req.body || {}))}, message="${(req.body?.message || '').substring(0, 50)}", user=${req.user?.id || 'ANONYMOUS'}`);
+
+            const { message } = req.body;
+            if (!message || typeof message !== 'string') {
+                console.log(`[ChatMention] >>> REJECTED: missing message`);
+                res.status(400).json({ error: 'Message is required' });
+                return;
+            }
+
+            // 1. Direct Regex for ticket extraction (Robust)
+            const jiraRegex = /([A-Z0-9]+)-(\d+)/gi;
+            const matches = [...message.matchAll(jiraRegex)];
+            const tickets = matches.map(m => ({ projectKey: m[1], ticketId: m[0] }));
+
+            console.log(`[ChatMention] >>> EXTRACTED ${tickets.length} ticket(s):`, JSON.stringify(tickets.map(t => t.ticketId)));
+
+            if (tickets.length === 0) {
+                console.log(`[ChatMention] >>> NO TICKETS FOUND in: "${message}"`);
+                res.status(400).json({ error: 'No Jira ticket mentions found', hint: 'Use format like "AB-15" or "Test ATT-42"' });
+                return;
+            }
+
+            const userId = this.getUserId(req);
+            if (!userId) {
+                res.status(401).json({
+                    error: 'Authentication required',
+                    hint: 'Please log in again or check your session.',
+                });
+                return;
+            }
+            const ticketDetails = await Promise.all(
+                tickets.map(async (t) => {
+                    try {
+                        const jiraAxios = getJiraAxios();
+                        const response = await jiraAxios.get(`/rest/api/3/issue/${t.ticketId}`, {
+                            params: { fields: 'summary,status,description,issuetype' }
+                        });
+                        const summary = response.data.fields.summary || '';
+                        const description = TestCaseGeneratorService.extractTextFromADF(response.data.fields.description) || '';
+                        const currentStatus = response.data.fields.status?.name || 'Unknown';
+                        const session = await TestSessionCacheService.getSession(t.ticketId, userId);
+                        const details = {
+                            ticketId: t.ticketId,
+                            projectKey: t.projectKey,
+                            summary,
+                            status: currentStatus,
+                            description,
+                            issueType: response.data.fields.issuetype?.name || '',
+                            hasSession: !!session && session.status === 'in_progress'
+                        };
+                        const { JiraSyncController } = require('./JiraSyncController');
+                        JiraSyncController.upsertActiveTicket(details);
+
+                        // Check for similar open tickets (duplicate detection)
+                        const keywords = BugReproductionService.extractKeywords(summary + ' ' + description);
+                        if (keywords.length > 0) {
+                            try {
+                                const jqlQueries = [
+                                    `project = ${t.projectKey} AND key != "${t.ticketId}" AND summary ~ "${keywords[0]}"`,
+                                    `project = ${t.projectKey} AND key != "${t.ticketId}" AND description ~ "${keywords[0]}"`,
+                                ];
+                                const candidates: Array<{ ticketId: string; summary: string; status: string; similarity: number }> = [];
+                                for (const jql of jqlQueries) {
+                                    try {
+                                        const searchRes = await jiraAxios.get('/rest/api/3/search/jql', {
+                                            params: { jql, maxResults: 10, fields: 'summary,status' }
+                                        });
+                                        const issues = searchRes.data?.issues || [];
+                                        for (const issue of issues) {
+                                            if (candidates.find(c => c.ticketId === issue.key)) continue;
+                                            const issueSummary = issue.fields?.summary || '';
+                                            const issueDesc = TestCaseGeneratorService.extractTextFromADF(issue.fields?.description || '');
+                                            const similarity = BugReproductionService.calculateSimilarity(summary, description, issueSummary, issueDesc);
+                                            if (similarity >= 0.4) {
+                                                candidates.push({
+                                                    ticketId: issue.key,
+                                                    summary: issueSummary,
+                                                    status: issue.fields?.status?.name || 'Unknown',
+                                                    similarity: Math.round(similarity * 100) / 100,
+                                                });
+                                            }
+                                        }
+                                    } catch {
+                                        // Non-critical
+                                    }
+                                }
+                                candidates.sort((a, b) => b.similarity - a.similarity);
+                                const topCandidates = candidates.slice(0, 3);
+                                if (topCandidates.length > 0) {
+                                    (details as any).similarTickets = topCandidates;
+                                }
+                            } catch {
+                                // Non-critical — don't block if duplicate search fails
+                            }
+                        }
+
+                        return details;
+                    } catch (error: any) {
+                        return { ticketId: t.ticketId, projectKey: t.projectKey, error: error.message };
+                    }
+                })
+            );
+
+            // Check if ALL ticket fetches failed (Jira unavailable)
+            const allFailed = ticketDetails.every((t: any) => (t as any).error);
+            if (allFailed) {
+                const firstError = (ticketDetails[0] as any)?.error || 'Failed to fetch ticket details from Jira';
+                console.log(`[ChatMention] >>> ALL TICKET FETCHES FAILED: ${firstError}`);
+                res.status(502).json({
+                    error: 'Failed to fetch ticket details from Jira',
+                    details: firstError,
+                    hint: 'Check Jira credentials (JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN) in backend .env and restart backend.',
+                });
+                return;
+            }
+
+            // Filter out failed tickets and warn about partial failures
+            const successfulTickets = ticketDetails.filter((t: any) => !(t as any).error);
+            const failedTickets = ticketDetails.filter((t: any) => (t as any).error);
+            if (failedTickets.length > 0) {
+                console.log(`[ChatMention] >>> ${failedTickets.length} ticket(s) failed to fetch:`, failedTickets.map((t: any) => `${t.ticketId}: ${t.error}`).join('; '));
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    mentions: tickets,
+                    tickets: successfulTickets.map((t: any) => ({
+                        ticketId: t.ticketId,
+                        summary: t.summary,
+                        status: t.status,
+                        priority: t.priority,
+                        description: t.description,
+                        similarTickets: t.similarTickets || []
+                    })),
+                    logs: [
+                        { phase: 'intelligence', text: `🕵️‍♂️ Target Identified: \${successfulTickets[0]?.ticketId}`, status: 'done' as const },
+                        { phase: 'intelligence', text: `📊 Status: \${(successfulTickets[0] as any)?.status}`, status: 'done' as const },
+                        { phase: 'intelligence', text: `🔍 Duplicate Check: \${(successfulTickets[0] as any)?.similarTickets?.length || 0} matches`, status: 'done' as const }
+                    ]
+                }
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Chat mention error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/start
+     *
+     * Supports two modes via req.body.mode:
+     *   - 'traditional' (default): generate test cases → approve → execute Playwright script
+     *   - 'agentic': open live browser → AI agent explores page step-by-step → self-heals
+     */
+    static async startTesting(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { autoTransition = true, mode = 'traditional' } = req.body;
+            const userId = this.getUserId(req);
+
+            if (!ticketId || !ChatMentionService.validateTicketFormat(ticketId)) {
+                res.status(400).json({ error: 'Invalid ticket ID format' });
+                return;
+            }
+
+            const jiraAxios = getJiraAxios();
+            const response = await jiraAxios.get(`/rest/api/3/issue/${ticketId}`, {
+                params: { fields: 'summary,status,description,issuetype' }
+            });
+            const summary = response.data.fields.summary || '';
+            const description = TestCaseGeneratorService.extractTextFromADF(response.data.fields.description) || '';
+            const currentStatus = response.data.fields.status?.name || 'Unknown';
+            const issueType = response.data.fields.issuetype?.name || 'Unknown';
+
+            // Validate ticket type — only Bug/Story can be tested
+            const testingTypes = ['Bug', 'Story', 'Task'];
+            const isTestingType = testingTypes.some(t => issueType.toLowerCase() === t.toLowerCase());
+            if (!isTestingType) {
+                res.status(400).json({
+                    error: `Ticket "${ticketId}" is a **${issueType}**, not a testing ticket. Please verify the ticket type in Jira.`,
+                    ticketType: issueType,
+                    blocked: true,
+                });
+                return;
+            }
+
+            // Check for Done/Bug Done — block start
+            const statusLower = currentStatus.toLowerCase();
+            const isDone = statusLower.includes('done') || statusLower.includes('closed') || statusLower.includes('resolved');
+            if (isDone) {
+                res.status(400).json({
+                    error: `Ticket "${ticketId}" is already **${currentStatus}**. Cannot restart testing. Create a new ticket or manually reopen this one in Jira.`,
+                    blocked: true,
+                });
+                return;
+            }
+
+            // Check for existing user session
+            const existingSession = await TestSessionCacheService.getSession(ticketId, userId);
+            if (existingSession && existingSession.status === 'in_progress') {
+                const summaryChanged = existingSession.jiraSnapshot?.summary !== summary;
+                const descChanged = existingSession.jiraSnapshot?.description !== description;
+                res.json({
+                    success: true,
+                    message: 'Session already exists',
+                    session: existingSession,
+                    restored: true,
+                    syncRequired: summaryChanged || descChanged,
+                    currentJiraData: { summary, description, status: currentStatus },
+                    changesDetected: { summaryChanged, descChanged }
+                });
+                return;
+            }
+
+            let transitionResult: any = null;
+            if (autoTransition) {
+                transitionResult = await JiraTransitionService.autoTransitionToInTesting(ticketId);
+            }
+
+            const session = await TestSessionCacheService.createSession(ticketId, userId, summary, description, currentStatus);
+
+            // Fire-and-forget orchestration — status-tracked background job.
+            // JiraTicketOrchestrator runs StoryTestPlanner + Qwen CLI (can take several minutes).
+            setImmediate(async () => {
+                try {
+                    await TestSessionCacheService.updateSession(ticketId, userId, {
+                        orchestrationStatus: { status: 'running', lastRunAt: new Date().toISOString() }
+                    });
+                    
+                    await JiraTicketOrchestrator.orchestrate(ticketId);
+                    
+                    await TestSessionCacheService.updateSession(ticketId, userId, {
+                        orchestrationStatus: { status: 'completed', lastRunAt: new Date().toISOString() }
+                    });
+                } catch (orchErr: any) {
+                    appLogger.warn('[TestingWorkflow] Background orchestration failed', { source: 'TestingWorkflow', error: orchErr.message });
+                    await TestSessionCacheService.updateSession(ticketId, userId, {
+                        orchestrationStatus: { 
+                            status: 'failed', 
+                            error: orchErr.message, 
+                            lastRunAt: new Date().toISOString() 
+                        }
+                    }).catch(() => {});
+                }
+            });
+
+            // Post to linked issues (also fire-and-forget — not critical path)
+            JiraUploadService.getTestedByLinkedIssues(ticketId).then(async (linkedIssues) => {
+                for (const linked of linkedIssues) {
+                    await jiraAxios.post(`/rest/api/3/issue/${linked}/comment`, {
+                        body: { version: 1, type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: `🚀 Testing started in ${ticketId}.` }] }] }
+                    }).catch(() => {});
+                }
+            }).catch((err: any) => {
+                appLogger.warn('[TestingWorkflow] Failed to post to linked issues', { source: 'TestingWorkflow', error: err.message });
+            });
+
+            await this.audit(req, 'session_start', 'test_session', ticketId, { summary, status: currentStatus });
+
+            res.json({
+                success: true,
+                message: `Testing started for ${ticketId}`,
+                session,
+                transition: transitionResult,
+                currentStatus: transitionResult?.success ? 'In Testing' : currentStatus,
+                orchestration: null,
+                logs: [
+                    { phase: 'start', text: `✓ Started testing ${ticketId}: ${summary}`, status: 'done' as const },
+                    { phase: 'start', text: `✓ Ticket type: ${issueType}`, status: 'done' as const },
+                ]
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Start error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/scenarios
+     */
+    static async generateScenarios(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            
+            // Fetch full ticket context including comments/discussion
+            const { getJiraAxios } = require('../utils/jiraAxios');
+            const jiraAxios = getJiraAxios();
+            const jiraRes = await jiraAxios.get(`/rest/api/3/issue/${ticketId}?fields=comment`);
+            const rawComments = jiraRes.data.fields?.comment?.comments || [];
+
+            const result = await TestCaseGeneratorService.generateScenariosFromJira(ticketId, {
+                jiraComments: rawComments
+            });
+
+            res.json({
+                success: true,
+                ...result,
+                logs: [
+                    { phase: 'scenarios', text: `✓ Generated ${result.scenarios.length} scenarios from Jira ticket + discussion`, status: 'done' as const },
+                ]
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Scenario error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/user-scenarios
+     * Add a user-written scenario for test case generation.
+     * Body: { description: "Plain English scenario description" }
+     */
+    static async addUserScenario(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { description } = req.body;
+            if (!description || typeof description !== 'string') {
+                res.status(400).json({ error: 'Scenario description is required' });
+                return;
+            }
+
+            const userId = this.getUserId(req);
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'No active session found. Start testing first.' });
+                return;
+            }
+
+            const scenario: { id: string; description: string; source: 'user' | 'ai'; createdAt: string; selected: boolean } = {
+                id: `USER_SCENARIO_${Date.now()}`,
+                description: description.trim(),
+                source: 'user',
+                createdAt: new Date().toISOString(),
+                selected: true,
+            };
+
+            const userScenarios = [...(session.userScenarios || []), scenario];
+            await TestSessionCacheService.updateSession(ticketId, userId, { userScenarios });
+
+            res.json({
+                success: true,
+                scenario,
+                totalCount: userScenarios.length,
+                message: `✅ User scenario added. You have ${userScenarios.length} user scenario(s) total.`
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Add user scenario error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * DELETE /api/testing/:ticketId/user-scenarios/:index
+     * Remove a user-scenario by index.
+     */
+    static async removeUserScenario(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId, index } = req.params;
+            const userId = this.getUserId(req);
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'No active session found' });
+                return;
+            }
+
+            const userScenarios = session.userScenarios || [];
+            const idx = parseInt(index, 10);
+            if (isNaN(idx) || idx < 0 || idx >= userScenarios.length) {
+                res.status(400).json({ error: 'Invalid scenario index' });
+                return;
+            }
+
+            userScenarios.splice(idx, 1);
+            await TestSessionCacheService.updateSession(ticketId, userId, { userScenarios });
+
+            res.json({ success: true, count: userScenarios.length, message: `Scenario removed` });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Remove user scenario error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    private static normaliseResultStatus(status: string): 'pass' | 'fail' | 'code_fault' | 'pending' | 'running' {
+        const lower = status.toLowerCase();
+        if (lower === 'pass' || lower === 'passed') return 'pass';
+        if (lower === 'fail' || lower === 'failed') return 'fail';
+        if (lower === 'code_fault' || lower === 'codefault' || lower === 'fault') return 'code_fault';
+        if (lower === 'running') return 'running';
+        return 'pending';
+    }
+
+    private static normaliseResults(results: Array<any>): Array<any> {
+        return results.map(r => ({
+            ...r,
+            status: this.normaliseResultStatus(String(r.status || '')),
+            caseId: r.caseId || r.id || r.testCaseId || '',
+            caseName: r.caseName || r.name || r.title || '',
+            duration: r.duration ? String(r.duration) : '—',
+        }));
+    }
+
+    /**
+     * POST /api/testing/:ticketId/test-cases/generate
+     */
+    static async generateTestCases(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { model, refresh = false } = req.body;
+            const userId = this.getUserId(req);
+
+            let session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (session && session.testCases.length > 0 && !refresh) {
+                res.json({ success: true, message: 'Test cases already generated', testCases: session.testCases, fromCache: true });
+                return;
+            }
+
+            if (!session) {
+                const { JiraService } = require('../../api/JiraService');
+                const ticket = await JiraService.fetchTicket(ticketId);
+                const comments = ticket.comments?.map((c: any) => `[${c.author}] ${c.body}`) || [];
+
+                session = await TestSessionCacheService.createSession(
+                    ticketId, userId,
+                    ticket.summary || '',
+                    ticket.description || '',
+                    ticket.status || 'Unknown',
+                    comments
+                );
+            }
+
+            const { selectedScenarios, scenarios } = req.body;
+            const effectiveScenarios = selectedScenarios || scenarios;
+            const userScenarios = session.userScenarios?.filter(s => s.selected).map(s => s.description) || [];
+
+            // Emit generation start progress
+            ProcessProgressService.generationProgress(ticketId, 'Starting test case generation...', 10);
+
+            let generated;
+            if (effectiveScenarios && Array.isArray(effectiveScenarios) && effectiveScenarios.length > 0) {
+                ProcessProgressService.generationProgress(ticketId, 'Generating from selected scenarios...', 30);
+                const firstItem = effectiveScenarios[0];
+                if (typeof firstItem === 'object' && firstItem !== null && 'id' in firstItem) {
+                    generated = await TestCaseGeneratorService.generateFromScenarios(ticketId, effectiveScenarios, model, userScenarios);
+                } else if (typeof firstItem === 'string') {
+                    generated = await TestCaseGeneratorService.generateFromScenarios(ticketId, effectiveScenarios as any, model, userScenarios);
+                } else {
+                    res.status(400).json({ error: 'Invalid scenario format.' });
+                    return;
+                }
+            } else {
+                ProcessProgressService.generationProgress(ticketId, 'Generating from Jira ticket analysis...', 30);
+                generated = await TestCaseGeneratorService.generateFromJira(ticketId, model, userScenarios);
+            }
+
+            // Emit generation completion progress
+            const scenarioCount = (session.userScenarios?.filter(s => s.selected).length) || 1;
+            ProcessProgressService.generationProgress(ticketId,
+                `Generated ${generated.testCases.length} test cases across ${scenarioCount} scenarios`,
+                100,
+                {
+                    scenarioCount,
+                    testCaseCount: generated.testCases.length,
+                }
+            );
+
+            // Wire linkedRequirement from user scenarios and ticket ID
+            const selectedUserScenarios = session.userScenarios?.filter(s => s.selected) || [];
+            for (const tc of generated.testCases) {
+                tc.linkedRequirement = ticketId;
+                for (const scenario of selectedUserScenarios) {
+                    if (scenario.description.toLowerCase().split(' ').some(word =>
+                        word.length > 3 && (tc.title.toLowerCase().includes(word) || (tc.description?.toLowerCase().includes(word)))
+                    )) {
+                        tc.linkedRequirement = `${ticketId} — ${scenario.description.substring(0, 80)}`;
+                        break;
+                    }
+                }
+            }
+
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                testCases: generated.testCases,
+                compiledScripts: generated.compiledScripts,
+                phase: 'test_case_design'
+            });
+
+            await this.audit(req, 'generate_cases', 'test_session', ticketId, { count: generated.testCases.length, model: generated.model });
+
+            res.json({ success: true, message: `Generated ${generated.testCases.length} test cases`, testCases: generated.testCases, model: generated.model, tokensUsed: generated.tokensUsed });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Generate cases error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/test-cases
+     */
+    static async saveTestCase(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { testCase, action }: { testCase: TestCase; action: 'add' | 'update' | 'delete' } = req.body;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found. Start testing first.' });
+                return;
+            }
+
+            let testCases = [...session.testCases];
+            switch (action) {
+                case 'add': testCases.push(testCase); break;
+                case 'update': {
+                    const idx = testCases.findIndex(tc => tc.caseId === testCase.caseId);
+                    if (idx >= 0) testCases[idx] = testCase; else testCases.push(testCase);
+                    break;
+                }
+                case 'delete': testCases = testCases.filter(tc => tc.caseId !== testCase.caseId); break;
+            }
+
+            await TestSessionCacheService.updateSession(ticketId, userId, { testCases });
+            res.json({ success: true, message: `Test case ${action}d`, testCases });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Save cases error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/test-cases/approve
+     */
+    static async approveTestCases(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found' });
+                return;
+            }
+            if (session.testCases.length === 0) {
+                res.status(400).json({ error: 'No test cases to approve' });
+                return;
+            }
+
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                approvedTestCases: true,
+                phase: 'execution'
+            });
+
+            const jiraSynced = await JiraUploadService.updateTestCaseField(ticketId, session.testCases);
+            await this.audit(req, 'approve_cases', 'test_session', ticketId, { count: session.testCases.length, jiraSynced });
+
+            res.json({ 
+                success: true, 
+                message: jiraSynced 
+                    ? 'Test cases approved and synced to Jira. Ready for execution.' 
+                    : 'Test cases approved but Jira sync failed. Ready for execution.', 
+                testCasesCount: session.testCases.length,
+                jiraSynced
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Approve error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/test-cases/bulk
+     */
+    static async bulkSaveTestCases(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { testCases }: { testCases: TestCase[] } = req.body;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found' });
+                return;
+            }
+
+            // Automatic re-compilation of scripts when cases are edited
+            const compiledScripts = await TestCaseGeneratorService.recompileTestCases(
+                ticketId, 
+                session.summary, 
+                TestCaseGeneratorService.detectModuleFromSummary(session.summary), 
+                testCases,
+                session.environment
+            );
+
+            await TestSessionCacheService.updateSession(ticketId, userId, { 
+                testCases, 
+                compiledScripts 
+            });
+            
+            res.json({ 
+                success: true, 
+                message: `Bulk updated and re-compiled ${testCases.length} test cases`, 
+                count: testCases.length 
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Bulk save error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/execute
+     */
+    static async executeTests(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            console.log(`[TestingWorkflow] >>> EXECUTE: ticketId=${ticketId}, user=${req.user?.id || 'ANONYMOUS'}`);
+            const { environment, testCaseIds } = req.body as { environment: TestEnvironment; testCaseIds?: string[] };
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found' });
+                return;
+            }
+            if (!session.approvedTestCases) {
+                res.status(400).json({ error: 'Test cases not approved yet' });
+                return;
+            }
+
+            const env = environment || session.environment || {
+                stage: 'testing',
+                baseUrl: process.env.BASE_URL || 'http://localhost:4200',
+                username: process.env.TEST_USERNAME || '',
+                password: process.env.TEST_PASSWORD || '',
+                idNumber: process.env.TEST_IDNUMBER || '',
+                customerId: process.env.CUSTOMER_ID || '',
+                fullUrl: process.env.BASE_URL || 'http://localhost:4200',
+                browser: 'chromium',
+                headless: true,
+                timeout: 300000,
+                autoHeal: true,
+                platform: 'LOCAL' as const
+            };
+
+            let testCasesToRun = session.testCases;
+            if (testCaseIds && testCaseIds.length > 0) {
+                testCasesToRun = session.testCases.filter(tc => testCaseIds.includes(tc.caseId));
+            }
+            if (testCasesToRun.length === 0) {
+                res.status(400).json({ error: 'No test cases to execute' });
+                return;
+            }
+
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                environment: env,
+                phase: 'execution'
+            });
+
+            // Acquire execution lock — prevent concurrent runs on same session
+            const lockAcquired = await TestSessionCacheService.acquireExecutionLock(ticketId, userId);
+            if (!lockAcquired) {
+                res.status(409).json({
+                    error: 'Execution already in progress for this session',
+                    code: 'EXECUTION_LOCK_ACTIVE'
+                });
+                return;
+            }
+
+            const results = await (async () => {
+                // Register AbortController for this execution
+                const abortController = new AbortController();
+                TestSessionCacheService.setExecutionAbortController(ticketId, userId, abortController);
+
+                // Emit execution start progress
+                ProcessProgressService.executionProgress(ticketId,
+                    `Starting execution of ${testCasesToRun.length} test cases...`,
+                    5,
+                    { totalTestCases: testCasesToRun.length }
+                );
+
+                // User-scoped WebSocket events
+                const { JobEvents } = require('../../api/WorkerQueue');
+
+                return TestExecutionService.executeAllTestCases(
+                    testCasesToRun, env, ticketId, userId,
+                    (progress) => {
+                        // Emit via ProcessProgressService for unified pipeline tracking
+                        const completedCount = progress.completedTestCases || 0;
+                        const total = progress.totalTestCases || testCasesToRun.length;
+                        const phaseProgress = total > 0 ? Math.round((completedCount / total) * 100) : 50;
+
+                        ProcessProgressService.executionProgress(ticketId,
+                            progress.currentAction || `Executing test case ${completedCount + 1}/${total}`,
+                            Math.min(phaseProgress, 95),
+                            {
+                                currentTestCaseId: progress.currentTestCaseId,
+                                currentTestCaseIndex: completedCount,
+                                totalTestCases: total,
+                            }
+                        );
+
+                        JobEvents.emit('execution:progress', {
+                            type: 'execution:progress',
+                            payload: { ...progress, ticketId, userId },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    (log) => {
+                        JobEvents.emit('execution:log', {
+                            type: 'execution:log',
+                            payload: { ticketId, userId, log },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    true,  // autoHeal
+                    Number(process.env.PLAYWRIGHT_CONCURRENCY || 3), // concurrency
+                    undefined, // skipPassed
+                    undefined, // existingResults
+                    session.compiledScripts, // compiled scripts from generation
+                ).finally(() => {
+                    TestSessionCacheService.clearExecutionAbortController(ticketId, userId);
+                    TestSessionCacheService.releaseExecutionLock(ticketId, userId);
+                });
+            })();
+
+            // Emit execution completion
+            const passedCount = results.filter((r: TestResult) => r.status === 'PASS').length;
+            const failedCount = results.filter((r: TestResult) => r.status === 'FAIL').length;
+            ProcessProgressService.executionProgress(ticketId,
+                `Execution complete: ${passedCount} passed, ${failedCount} failed out of ${results.length} test cases`,
+                100,
+                {
+                    totalTestCases: results.length,
+                    status: failedCount > 0 ? 'completed' : 'completed',
+                }
+            );
+
+            // Check if execution was aborted (signal set by /execute/abort endpoint)
+            const isAborted = TestSessionCacheService.isExecutionAborted(ticketId, userId);
+
+            // Only generate reports if execution completed normally (not aborted)
+            if (!isAborted) {
+                const htmlReportPath = await TestExecutionService.generateHtmlReport(ticketId, testCasesToRun, results, env.stage);
+                const zipPath = await TestExecutionService.createZipArchive(ticketId, results);
+
+                await TestSessionCacheService.updateSession(ticketId, userId, {
+                    results,
+                    artifactsPath: zipPath,
+                    phase: 'reporting'
+                });
+            } else {
+                // Save partial results and transition to 'reporting' with aborted flag
+                // This enables recovery path: users can upload partial results or retry
+                const htmlReportPath = await TestExecutionService.generateHtmlReport(ticketId, testCasesToRun, results, env.stage);
+                const zipPath = await TestExecutionService.createZipArchive(ticketId, results);
+
+                await TestSessionCacheService.updateSession(ticketId, userId, {
+                    results,
+                    artifactsPath: zipPath,
+                    phase: 'reporting',
+                    aborted: true  // Flag to indicate results are partial
+                });
+            }
+
+            const summary = TestExecutionService.getExecutionSummary(results);
+            await this.audit(req, 'execute_tests', 'test_session', ticketId, { passed: summary.passed, failed: summary.failed, total: summary.total, aborted: isAborted });
+
+            // --- Deduplication Jira Comment: check for overlapping tests across tickets ---
+            if (!isAborted && testCasesToRun.length > 0) {
+                try {
+                    const { TestDeduplicationService } = await import('../services/TestDeduplicationService');
+                    const dedupResult = TestDeduplicationService.checkForDuplicates(testCasesToRun, ticketId);
+
+                    if (dedupResult.duplicateCount > 0) {
+                        // Build a concise dedup comment for Jira
+                        const dedupLines = dedupResult.duplicates
+                            .slice(0, 3) // Max 3 to keep comment readable
+                            .map(d => {
+                                const top = d.overlappingWith[0];
+                                return `• \`${d.testCaseId}\` overlaps **${Math.round(top.overlapScore * 100)}%** with \`${top.testCaseId}\` in [${top.ticketId}|https://${process.env.JIRA_DOMAIN || 'jira.atlassian.net'}/browse/${top.ticketId}]`;
+                            })
+                            .join('\n');
+
+                        const dedupComment = `🤖 **GoHybrid AI — Test Deduplication Check**\n\n` +
+                            `Found **${dedupResult.duplicateCount}** potential duplicate(s) in this run:\n\n${dedupLines}\n\n` +
+                            `💡 Consider reusing existing test specs to reduce maintenance.`;
+
+                        // User requested to NOT post dedup comments to reduce echo-chamber context bloat
+                        // The test results themselves will be uploaded later
+                        appLogger.info(`[TestingWorkflow] Dedup comment checked for ${ticketId}: ${dedupResult.duplicateCount} duplicate(s), skipping Jira post per new policy`);
+                    }
+                } catch (dedupErr: any) {
+                    appLogger.warn(`[TestingWorkflow] Dedup check failed: ${dedupErr.message}`);
+                }
+            }
+
+            if (isAborted) {
+                const passCount = summary.passed;
+                const failCount = results.filter((r: any) => r.status === 'FAIL').length;
+                const abortedCount = results.filter((r: any) => r.status !== 'PASS' && r.status !== 'FAIL').length;
+                res.json({
+                    success: true,
+                    aborted: true,
+                    message: `Execution aborted: ${passCount} passed, ${failCount} failed, ${abortedCount} skipped`,
+                    results,
+                    summary
+                });
+            } else {
+                res.json({ success: true, message: `Execution complete: ${summary.passed}/${summary.total} passed`, results, summary });
+            }
+        } catch (error: any) {
+            const { ticketId } = req.params;
+            appLogger.error('[TestingWorkflow] Execute error', { source: 'TestingWorkflow', error: error.message });
+            try {
+                await JiraTransitionService.autoTransitionToToDo(ticketId, `🤖 GoHybrid AI: Critical failure. Error: ${error.message}`);
+            } catch (transitionError: any) {
+                // Log the transition failure — ticket may be stuck in "In Testing"
+                appLogger.error(`[TestingWorkflow] Failed to transition ${ticketId} back to To Do after crash: ${transitionError.message}`, {
+                    source: 'TestingWorkflow',
+                    ticketId,
+                    originalError: error.message,
+                    transitionError: transitionError.message
+                });
+                // Include transition failure in error response so user knows ticket may need manual intervention
+                error.transitionFailed = true;
+                error.transitionErrorMessage = transitionError.message;
+            }
+            // FORCE CLEAN UP LOCK!
+            await TestSessionCacheService.releaseExecutionLock(ticketId, TestingWorkflowController.getUserId(req)).catch(() => {});
+            res.status(500).json({ error: error.message, transitionFailed: error.transitionFailed, transitionErrorMessage: error.transitionErrorMessage });
+        }
+    }
+
+    /**
+     * POST /api/testing/mission
+     * Executes an autonomous mission using Vision reasoning.
+     */
+    static async executeMission(req: Request, res: Response): Promise<void> {
+        try {
+            const { goal, baseUrl } = req.body;
+            const userId = this.getUserId(req);
+
+            if (!goal || !baseUrl) {
+                res.status(400).json({ error: 'Goal and baseUrl are required' });
+                return;
+            }
+
+            appLogger.info('[TestingWorkflow] Launching autonomous mission', { userId, goal, baseUrl });
+            
+            // Delegate to the Orchestrator's new vision mission method
+            const { AgentOrchestrator } = require('../../api/AgentOrchestrator');
+            const result = await AgentOrchestrator.executeAutonomous_Mission(goal, baseUrl);
+
+            res.json({
+                success: result.status === 'success',
+                message: result.status === 'success' ? 'Mission accomplished' : 'Mission failed',
+                steps: result.steps
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Mission error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/execute/retry
+     * Re-runs only the failed test cases. Keeps passed results, updates session with merged results.
+     */
+    static async retryFailedTests(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found. Run tests first.' });
+                return;
+            }
+            if (!session.results || session.results.length === 0) {
+                res.status(400).json({ error: 'No previous results to retry. Execute tests first.' });
+                return;
+            }
+            if (!session.approvedTestCases) {
+                res.status(400).json({ error: 'Test cases not approved yet' });
+                return;
+            }
+
+            const env = session.environment || {
+                stage: 'testing',
+                baseUrl: process.env.BASE_URL || 'http://localhost:4200',
+                username: process.env.TEST_USERNAME || '',
+                password: process.env.TEST_PASSWORD || '',
+                idNumber: process.env.TEST_IDNUMBER || '',
+                customerId: process.env.CUSTOMER_ID || '',
+                fullUrl: process.env.BASE_URL || 'http://localhost:4200',
+                browser: 'chromium',
+                headless: true,
+                timeout: 300000,
+                autoHeal: true,
+                platform: 'LOCAL' as const
+            };
+
+            // Identify failed test cases from previous results
+            const failedIds = session.results.filter(r => r.status === 'FAIL').map(r => r.testCaseId);
+            if (failedIds.length === 0) {
+                res.json({ success: true, message: 'All tests passed. Nothing to retry.', results: session.results });
+                return;
+            }
+
+            appLogger.info('[TestingWorkflow] Retrying failed tests', { source: 'TestingWorkflow', count: failedIds.length, failedIds });
+
+            // Find the test case objects for failed results
+            let testCasesToRun = session.testCases.filter(tc => failedIds.includes(tc.caseId));
+
+            // Also allow explicit retry of specific cases from request body
+            const { retryCaseIds } = req.body as { retryCaseIds?: string[] };
+            if (retryCaseIds && retryCaseIds.length > 0) {
+                testCasesToRun = session.testCases.filter(tc => retryCaseIds.includes(tc.caseId));
+                if (testCasesToRun.length === 0) {
+                    res.status(400).json({ error: 'None of the requested test cases exist in this session' });
+                    return;
+                }
+            }
+
+            await TestSessionCacheService.updateSession(ticketId, userId, { phase: 'execution' });
+
+            // Acquire execution lock
+            const lockAcquired = await TestSessionCacheService.acquireExecutionLock(ticketId, userId);
+            if (!lockAcquired) {
+                res.status(409).json({
+                    error: 'Execution already in progress for this session',
+                    code: 'EXECUTION_LOCK_ACTIVE'
+                });
+                return;
+            }
+
+            const retryResults = await (async () => {
+                const { JobEvents } = require('../../api/WorkerQueue');
+
+                // KEY FIX: Don't pass cached compiled scripts for retry.
+                // This forces re-compilation with improved selectors from the TestPlannerService,
+                // so broken selectors get regenerated instead of re-running the same broken script.
+                const compiledScriptsForRetry = undefined;
+
+                return TestExecutionService.executeAllTestCases(
+                    testCasesToRun, env, ticketId, userId,
+                    (progress) => {
+                        JobEvents.emit('execution:progress', {
+                            type: 'execution:progress',
+                            payload: { ...progress, ticketId, userId, isRetry: true },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    (log) => {
+                        JobEvents.emit('execution:log', {
+                            type: 'execution:log',
+                            payload: { ticketId, userId, log, isRetry: true },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    true,  // autoHeal
+                    undefined, // concurrency
+                    undefined, // skipPassed
+                    undefined, // existingResults
+                    compiledScriptsForRetry, // Force re-compilation with improved selectors
+                ).finally(() => {
+                    TestSessionCacheService.releaseExecutionLock(ticketId, userId);
+                });
+            })();
+
+            const htmlReportPath = await TestExecutionService.generateHtmlReport(ticketId, testCasesToRun, retryResults, env.stage);
+            const zipPath = await TestExecutionService.createZipArchive(ticketId, retryResults);
+
+            // Merge old results with new ones — replace old failed results with new retry results
+            const newResultCaseIds = new Set(retryResults.map(r => r.testCaseId));
+            const previousResults = session.results.filter(r => !newResultCaseIds.has(r.testCaseId));
+            const mergedResults = [...previousResults, ...retryResults];
+
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                results: mergedResults,
+                artifactsPath: zipPath,
+                phase: 'reporting'
+            });
+
+            const summary = TestExecutionService.getExecutionSummary(mergedResults);
+            
+            // Fix: normalise results before responding and emit completion
+            const normalised = this.normaliseResults(mergedResults);
+            const { JobEvents } = require('../../api/WorkerQueue');
+            JobEvents.emit('execution:complete', {
+                ticketId,
+                results: normalised,
+                summary
+            });
+
+            await this.audit(req, 'retry_failed_tests', 'test_session', ticketId, {
+                retried: testCasesToRun.length,
+                passed: summary.passed,
+                failed: summary.failed,
+                total: summary.total
+            });
+
+            res.json({
+                success: true,
+                message: `Retry complete: ${summary.passed}/${summary.total} passed`,
+                results: normalised,
+                summary,
+                zipPath,
+            });
+        } catch (error: any) {
+            const { ticketId } = req.params;
+            appLogger.error('[TestingWorkflow] Retry error', { source: 'TestingWorkflow', error: error.message });
+            // FORCE CLEAN UP LOCK!
+            await TestSessionCacheService.releaseExecutionLock(ticketId, TestingWorkflowController.getUserId(req)).catch(() => {});
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/:ticketId/results/summary
+     * Get partial results after an abort — shows what passed, failed, and was skipped.
+     */
+    static async getPartialResults(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found' });
+                return;
+            }
+
+            const existingResults = session.results || [];
+            const executedCaseIds = new Set(existingResults.map(r => r.testCaseId));
+            const skippedCases = (session.testCases || []).filter(tc => !executedCaseIds.has(tc.caseId));
+
+            const summary = TestExecutionService.getExecutionSummary(existingResults);
+            // Add skipped count
+            summary.skipped = skippedCases.length;
+            summary.total = (session.testCases || []).length;
+
+            res.json({
+                success: true,
+                aborted: session.aborted || false,
+                phase: session.phase,
+                results: existingResults,
+                skipped: skippedCases.map(tc => ({
+                    testCaseId: tc.caseId,
+                    testCaseTitle: tc.title,
+                    status: 'SKIPPED'
+                })),
+                summary,
+                canResume: skippedCases.length > 0,
+                canUpload: !!session.artifactsPath,
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Get partial results error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/execute/resume
+     * Re-runs only the SKIPPED test cases after an abort.
+     * Merges new results with existing partial results from the aborted session.
+     * Generates artifacts so results can be uploaded to Jira.
+     */
+    static async resumeExecution(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found. Run tests first.' });
+                return;
+            }
+            if (!session.aborted && session.phase !== 'reporting') {
+                res.status(400).json({ error: 'No aborted session to resume. Execute tests first and abort during execution.' });
+                return;
+            }
+
+            const env = session.environment || {
+                stage: 'testing',
+                baseUrl: process.env.BASE_URL || 'http://localhost:4200',
+                username: process.env.TEST_USERNAME || '',
+                password: process.env.TEST_PASSWORD || '',
+                idNumber: process.env.TEST_IDNUMBER || '',
+                customerId: process.env.CUSTOMER_ID || '',
+                fullUrl: process.env.BASE_URL || 'http://localhost:4200',
+                browser: 'chromium',
+                headless: true,
+                timeout: 300000,
+                autoHeal: true,
+                platform: 'LOCAL' as const
+            };
+
+            // Identify skipped test cases: all test cases minus those that have results
+            const existingResults = session.results || [];
+            const executedCaseIds = new Set(existingResults.map(r => r.testCaseId));
+            const skippedCases = session.testCases.filter(tc => !executedCaseIds.has(tc.caseId));
+
+            if (skippedCases.length === 0) {
+                res.json({
+                    success: true,
+                    message: 'No skipped tests to resume. All test cases have been executed.',
+                    results: existingResults,
+                    summary: TestExecutionService.getExecutionSummary(existingResults)
+                });
+                return;
+            }
+
+            appLogger.info('[TestingWorkflow] Resuming skipped tests', {
+                source: 'TestingWorkflow',
+                count: skippedCases.length,
+                skipped: skippedCases.map(tc => tc.caseId)
+            });
+
+            // Allow explicit selection of specific cases from request body
+            const { resumeCaseIds } = req.body as { resumeCaseIds?: string[] };
+            let testCasesToRun = skippedCases;
+            if (resumeCaseIds && resumeCaseIds.length > 0) {
+                testCasesToRun = skippedCases.filter(tc => resumeCaseIds.includes(tc.caseId));
+                if (testCasesToRun.length === 0) {
+                    res.status(400).json({ error: 'None of the requested test cases are in the skipped set' });
+                    return;
+                }
+            }
+
+            // Reset phase back to execution for the resume
+            await TestSessionCacheService.updateSession(ticketId, userId, { phase: 'execution', aborted: false });
+
+            // Acquire execution lock
+            const lockAcquired = await TestSessionCacheService.acquireExecutionLock(ticketId, userId);
+            if (!lockAcquired) {
+                res.status(409).json({
+                    error: 'Execution already in progress for this session',
+                    code: 'EXECUTION_LOCK_ACTIVE'
+                });
+                return;
+            }
+
+            const resumeResults = await (async () => {
+                const { JobEvents } = require('../../api/WorkerQueue');
+
+                return TestExecutionService.executeAllTestCases(
+                    testCasesToRun, env, ticketId, userId,
+                    (progress) => {
+                        JobEvents.emit('execution:progress', {
+                            type: 'execution:progress',
+                            payload: { ...progress, ticketId, userId, isResume: true },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    (log) => {
+                        JobEvents.emit('execution:log', {
+                            type: 'execution:log',
+                            payload: { ticketId, userId, log, isResume: true },
+                            timestamp: new Date().toISOString()
+                        });
+                    },
+                    true,  // autoHeal
+                    undefined, // concurrency
+                    undefined, // skipPassed
+                    undefined, // existingResults
+                    undefined, // Force re-compilation with improved selectors
+                ).finally(() => {
+                    TestSessionCacheService.releaseExecutionLock(ticketId, userId);
+                });
+            })();
+
+            // Merge old results with new ones
+            const newResultCaseIds = new Set(resumeResults.map(r => r.testCaseId));
+            const previousResults = existingResults.filter(r => !newResultCaseIds.has(r.testCaseId));
+            const mergedResults = [...previousResults, ...resumeResults];
+
+            // Generate artifacts so results can be uploaded to Jira
+            const htmlReportPath = await TestExecutionService.generateHtmlReport(ticketId, testCasesToRun, resumeResults, env.stage);
+            const zipPath = await TestExecutionService.createZipArchive(ticketId, mergedResults);
+
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                results: mergedResults,
+                artifactsPath: zipPath,
+                phase: 'reporting',
+                aborted: false  // Clear the aborted flag — resume is complete
+            });
+
+            const summary = TestExecutionService.getExecutionSummary(mergedResults);
+            await this.audit(req, 'resume_execution', 'test_session', ticketId, {
+                resumed: testCasesToRun.length,
+                passed: summary.passed,
+                failed: summary.failed,
+                skipped: summary.skipped,
+                total: summary.total
+            });
+
+            res.json({
+                success: true,
+                message: `Resume complete: ${summary.passed}/${summary.total} passed (${summary.skipped || 0} skipped)`,
+                resumed: testCasesToRun.length,
+                resumeResults,
+                mergedResults,
+                summary,
+                zipPath,
+            });
+        } catch (error: any) {
+            const { ticketId } = req.params;
+            appLogger.error('[TestingWorkflow] Resume error', { source: 'TestingWorkflow', error: error.message });
+            await TestSessionCacheService.releaseExecutionLock(ticketId, TestingWorkflowController.getUserId(req)).catch(() => {});
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/results/upload
+     */
+    static async uploadResults(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { postComment = true, uploadAttachment = true, transitionTo, environment } = req.body;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session || !session.results) {
+                res.status(400).json({ error: 'No results to upload' });
+                return;
+            }
+            if (!session.artifactsPath) {
+                res.status(400).json({ error: 'No artifacts found. Run tests first.' });
+                return;
+            }
+
+            const summary = TestExecutionService.getExecutionSummary(session.results);
+            const results: any = {};
+
+            try {
+                const { ReportGenerator } = await import('../services/ReportGenerator');
+                const scenarios = (session as any).scenarios || [];
+                const report = ReportGenerator.generate(ticketId, session.summary || `Test Results for ${ticketId}`, session.results as any, scenarios);
+                const reportDir = session.artifactsPath || path.join(process.cwd(), 'test-results', ticketId);
+                results.reports = ReportGenerator.saveReport(report, reportDir);
+            } catch (reportErr: any) {
+                appLogger.warn('[TestingWorkflow] Report gen failed', { source: 'TestingWorkflow', error: reportErr.message });
+            }
+
+            if (uploadAttachment && postComment) {
+                const uploadResult = await JiraUploadService.completeWorkflow(ticketId, session.artifactsPath, session.results, summary, transitionTo, environment || session.environment?.stage);
+                results.attachment = { attachmentId: uploadResult.attachmentId, attachmentUrl: uploadResult.attachmentUrl };
+                results.commentPosted = uploadResult.commentPosted;
+                results.transitioned = uploadResult.transitioned;
+                results.transitionStatus = uploadResult.transitionStatus;
+                results.errors = uploadResult.errors;
+
+                // Check for critical failures — if key steps failed, report as partial failure
+                const hasCriticalErrors = uploadResult.errors.length > 0;
+                if (hasCriticalErrors) {
+                    // Return 207 Multi-Status to indicate partial success
+                    res.status(207).json({
+                        success: false,
+                        message: 'Results upload partially failed',
+                        results,
+                        warnings: uploadResult.errors
+                    });
+                    return;
+                }
+
+                if (uploadResult.transitioned) {
+                    await TestSessionCacheService.completeSession(ticketId, userId, session.results, session.artifactsPath);
+                }
+            } else {
+                if (uploadAttachment) {
+                    results.attachment = await JiraUploadService.uploadAttachment(ticketId, session.artifactsPath);
+                }
+                if (postComment) {
+                    await JiraUploadService.postTestResultsComment(ticketId, session.results, summary, environment || session.environment?.stage);
+                    results.commentPosted = true;
+                }
+                if (transitionTo) {
+                    const transitionResult = await JiraUploadService.transitionToFinalStatus(ticketId, transitionTo);
+                    results.transition = transitionResult;
+                    if (transitionResult.success) {
+                        await TestSessionCacheService.completeSession(ticketId, userId, session.results, session.artifactsPath);
+                    }
+                }
+            }
+
+            await this.audit(req, 'upload_results', 'test_session', ticketId, { summary });
+            res.json({ success: true, message: 'Results uploaded to Jira', results });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Upload error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/cancel
+     */
+    static async cancelSession(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            await TestSessionCacheService.deleteSession(ticketId, userId);
+            const transitionResult = await JiraTransitionService.autoTransitionToToDo(ticketId, `🤖 GoHybrid AI: Testing session aborted by user.`);
+
+            try {
+                const linkedIssues = await JiraUploadService.getTestedByLinkedIssues(ticketId);
+                const jiraAxios = getJiraAxios();
+                for (const linked of linkedIssues) {
+                    await jiraAxios.post(`/rest/api/3/issue/${linked}/comment`, {
+                        body: { version: 1, type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: `🛑 Testing for this issue in ${ticketId} was aborted.` }] }] }
+                    });
+                }
+            } catch (err: any) {
+                appLogger.warn('[TestingWorkflow] Failed to post abort comment', { source: 'TestingWorkflow', error: err.message });
+            }
+
+            await this.audit(req, 'cancel_session', 'test_session', ticketId);
+            res.json({ success: true, message: `Session canceled for ${ticketId}.`, sessionDeleted: true, transition: transitionResult });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Cancel error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/execute/abort
+     * Non-destructive stop: signals running execution to stop, preserves partial results.
+     */
+    static async abortExecution(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const wasAborted = TestSessionCacheService.abortExecution(ticketId, userId);
+            if (wasAborted) {
+                res.json({ success: true, message: 'Execution abort signal sent. Current test will finish, then execution will stop.', partialResults: true });
+            } else {
+                res.status(409).json({ error: 'No active execution found for this session', code: 'NO_EXECUTION_ACTIVE' });
+            }
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Abort error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/:ticketId/session
+     */
+    static async getSession(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({ error: 'Session not found' });
+                return;
+            }
+
+            const { JiraTransitionService } = require('../services/JiraTransitionService');
+            const actions = JiraTransitionService.getTicketActions(session.jiraSnapshot?.status || 'To Do');
+
+            res.json({ success: true, session, actions });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Get session error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/sessions
+     */
+    static async listSessions(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = this.getUserId(req);
+            const sessions = await TestSessionCacheService.listSessions(userId);
+            const stats = await TestSessionCacheService.getStats(userId);
+            res.json({ success: true, sessions, stats });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] List sessions error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * DELETE /api/testing/:ticketId/session
+     */
+    static async deleteSession(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+            const success = await TestSessionCacheService.deleteSession(ticketId, userId);
+            res.json({ success: true, message: success ? 'Session deleted' : 'Failed to delete session' });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Delete session error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/:ticketId/history
+     */
+    static async getSessionHistory(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+            const history = await TestSessionCacheService.getSessionHistory(ticketId, userId);
+            res.json({ success: true, history });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] History error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/history/restore/:version
+     */
+    static async restoreFromHistory(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId, version } = req.params;
+            const userId = this.getUserId(req);
+            const session = await TestSessionCacheService.restoreFromHistory(ticketId, userId, parseInt(version));
+            if (!session) {
+                res.status(404).json({ error: 'Version not found' });
+                return;
+            }
+            res.json({ success: true, message: `Restored to version ${version}`, session });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Restore history error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/generate
+     * Intelligent test generation that detects Bug vs Story and routes accordingly
+     */
+    static async generateTestCase(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { model, refresh = false } = req.body;
+            const userId = this.getUserId(req);
+
+            let session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (session && session.testCases.length > 0 && !refresh) {
+                res.json({ success: true, message: 'Test cases already generated', testCases: session.testCases, fromCache: true });
+                return;
+            }
+
+            // Type-aware generation — with user scenario context
+            let typeAwareResult;
+            const userScenariosForGenerate = session?.userScenarios?.filter(s => s.selected).map(s => s.description) || [];
+            if (userScenariosForGenerate.length > 0) {
+                typeAwareResult = await TestCaseGeneratorService.generateFromTicketType(ticketId, userScenariosForGenerate);
+            } else {
+                typeAwareResult = await TestCaseGeneratorService.generateFromTicketType(ticketId);
+            }
+
+            if (typeAwareResult.ticketType === 'Bug' && !typeAwareResult.success) {
+                // Duplicate bug — return analysis info
+                res.json({
+                    success: false,
+                    ticketType: 'Bug',
+                    warning: `Potential duplicate bug detected${typeAwareResult.analysis?.duplicateTicket ? ` — similar to ${typeAwareResult.analysis.duplicateTicket} (${Math.round((typeAwareResult.analysis?.duplicateTicket ? 1 : 0) * 100)}% similar)` : ''}`,
+                    analysis: typeAwareResult.analysis,
+                });
+                return;
+            }
+
+            // Cache the test cases
+            if (!session) {
+                const { JiraService } = require('../../api/JiraService');
+                const ticket = await JiraService.fetchTicket(ticketId);
+                const comments = ticket.comments?.map((c: any) => `[${c.author}] ${c.body}`) || [];
+
+                session = await TestSessionCacheService.createSession(
+                    ticketId, userId,
+                    ticket.summary || '',
+                    ticket.description || '',
+                    ticket.status || 'Unknown',
+                    comments
+                );
+            }
+
+            const testCases = typeAwareResult.generatedTestCases?.testCases || [];
+            const compiledScripts = typeAwareResult.generatedTestCases?.compiledScripts;
+            // Wire linkedRequirement from user scenarios
+            const selectedUserScenarios = session.userScenarios?.filter(s => s.selected) || [];
+            for (const tc of testCases) {
+                tc.linkedRequirement = ticketId;
+                for (const scenario of selectedUserScenarios) {
+                    if (scenario.description.toLowerCase().split(' ').some(word =>
+                        word.length > 3 && (tc.title.toLowerCase().includes(word) || (tc.description?.toLowerCase().includes(word)))
+                    )) {
+                        tc.linkedRequirement = `${ticketId} — ${scenario.description.substring(0, 80)}`;
+                        break;
+                    }
+                }
+            }
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                testCases,
+                compiledScripts,
+                phase: 'test_case_design'
+            });
+
+            await this.audit(req, 'generate_cases_type_aware', 'test_session', ticketId, {
+                count: testCases.length,
+                ticketType: typeAwareResult.ticketType,
+                module: typeAwareResult.module,
+            });
+
+            res.json({
+                success: true,
+                ticketType: typeAwareResult.ticketType,
+                module: typeAwareResult.module,
+                message: `Generated ${testCases.length} test case(s) for ${typeAwareResult.ticketType} ticket`,
+                testCases,
+                analysis: typeAwareResult.analysis,
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Intelligent generation error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/orchestrate
+     */
+    static async orchestrateTicket(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const { authHeaders } = req.body; // Optional: auth headers for menu API
+            if (!ticketId || !ChatMentionService.validateTicketFormat(ticketId)) {
+                res.status(400).json({ error: 'Invalid ticket ID format' });
+                return;
+            }
+            const result = await JiraTicketOrchestrator.orchestrate(ticketId);
+
+            // Attempt menu discovery if auth headers provided
+            let menuDiscoveryResult: any = null;
+            if (authHeaders && result.mainTicket) {
+                try {
+                    const baseUrl = process.env.BASE_URL || '';
+                    menuDiscoveryResult = await MenuDiscoveryService.discoverWithAuthHeaders(baseUrl, authHeaders);
+                    appLogger.info('[TestingWorkflow] Menu discovery completed', {
+                        ticketId,
+                        matched: menuDiscoveryResult.matchedModules,
+                    });
+                } catch (menuError: any) {
+                    appLogger.warn('[TestingWorkflow] Menu discovery failed (non-critical)', {
+                        ticketId,
+                        error: menuError.message,
+                    });
+                }
+            }
+
+            res.json({ success: true, ...result, menuDiscovery: menuDiscoveryResult });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Orchestration error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/:ticketId/auto-generate
+     * Full AI Brain Engine flow with confidence scoring:
+     * auto-discovers page elements, generates Playwright scripts with real
+     * selectors, and returns risk assessment for operator review.
+     * Jira ticket → cache check → auto-discovery (if stale) → script gen → session save
+     */
+    static async autoGenerateTicket(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+            const forceRegen = req.query.refresh === 'true';
+
+            // Check if already generated in this session
+            let session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!forceRegen && session && (session.testCases?.length > 0 || session.compiledScripts)) {
+                res.json({
+                    success: true,
+                    message: 'Test cases already generated (use ?refresh=true to regenerate)',
+                    testCases: session.testCases,
+                    compiledScripts: session.compiledScripts,
+                    confidenceAssessment: session.confidenceAssessment,
+                    fromCache: true
+                });
+                return;
+            }
+
+            // Fetch ticket from Jira
+            const jiraAxios = getJiraAxios();
+            const response = await jiraAxios.get(`/rest/api/3/issue/${ticketId}`, {
+                params: { fields: 'summary,description,issuetype,comment,labels' }
+            });
+
+            const issue = response.data;
+            const jiraIssue = {
+                issueType: issue.fields.issuetype?.name || 'Unknown',
+                summary: issue.fields.summary || '',
+                description: TestCaseGeneratorService.extractTextFromADF(issue.fields.description) || '',
+                comments: issue.fields.comment?.comments?.map((c: any) => c.body).join('\n---\n') || '',
+            };
+
+            appLogger.info(`[TestingWorkflow] Auto-generate for ${ticketId}: ${jiraIssue.issueType} — ${jiraIssue.summary}`, {
+                source: 'TestingWorkflow',
+                ticketId,
+            });
+
+            // Process through AIBrainEngine with confidence scoring
+            const { AIBrainEngine } = await import('../engine/AIBrainEngine');
+            const brainEngine = new AIBrainEngine(this.pool!);
+            const result = await brainEngine.processJiraIssueWithConfidence(jiraIssue);
+
+            appLogger.info(`[TestingWorkflow] Confidence: ${(result.confidence.overall * 100).toFixed(0)}%, Risk: ${result.riskLevel}`, {
+                source: 'TestingWorkflow',
+                ticketId,
+                confidence: result.confidence,
+                riskLevel: result.riskLevel,
+                requiresReview: result.requiresManualReview,
+            });
+
+            // Generate test cases via the standard pipeline for UI compatibility
+            let testCases: TestCase[];
+            try {
+                const userScenarios = session?.userScenarios?.filter(s => s.selected).map(s => s.description) || [];
+                const genResult = await TestCaseGeneratorService.generateFromTicketType(ticketId, userScenarios);
+                testCases = genResult.generatedTestCases?.testCases || [];
+            } catch (err: any) {
+                appLogger.warn(`[TestingWorkflow] TestCaseGeneratorService failed, using AI-generated script: ${err.message}`);
+                testCases = [{
+                    caseId: 'AUTO-001',
+                    title: `AI Generated Test for ${ticketId}`,
+                    description: jiraIssue.summary,
+                    priority: 'High',
+                    steps: [{
+                        stepNumber: 1,
+                        action: `Run AI-generated script for ticket ${ticketId}`,
+                        expectedResult: 'Script completes successfully',
+                    }],
+                    expectedOutcome: 'AI-generated script executes without errors',
+                    preconditions: [],
+                    isEditable: false,
+                }];
+            }
+
+            // Create session if not exists
+            if (!session) {
+                session = await TestSessionCacheService.createSession(
+                    ticketId, userId, jiraIssue.summary, jiraIssue.description
+                );
+            }
+
+            // Update session with generated content AND confidence assessment
+            // Extract the code from the assessment to keep it lean (code lives in compiledScripts)
+            const { code: _, ...confidenceData } = result;
+            await TestSessionCacheService.updateSession(ticketId, userId, {
+                testCases,
+                compiledScripts: { ...(session?.compiledScripts || {}), 'ai-generated': result.code },
+                confidenceAssessment: { ...confidenceData, assessedAt: new Date().toISOString() },
+                phase: 'test_case_design',
+            });
+
+            await this.audit(req, 'auto_generate_with_discovery', 'test_session', ticketId, {
+                count: testCases.length,
+                aiGenerated: true,
+                confidence: result.confidence.overall,
+                riskLevel: result.riskLevel,
+                requiresReview: result.requiresManualReview,
+            });
+
+            res.json({
+                success: true,
+                message: `Generated tests with real element selectors for ${ticketId}`,
+                testCases,
+                aiGeneratedScript: result.code.slice(0, 2000) + (result.code.length > 2000 ? '...' : ''),
+                aiGeneratedFullScript: result.code,
+                confidenceAssessment: {
+                    overall: result.confidence.overall,
+                    riskLevel: result.riskLevel,
+                    requiresManualReview: result.requiresManualReview,
+                    breakdown: result.confidence,
+                    recommendations: result.recommendations,
+                },
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Auto-generate error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/:ticketId/refresh
+     * Queries Jira in real-time and returns AI-guided status assessment with options.
+     */
+    static async refreshTicket(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            if (!ticketId || !ChatMentionService.validateTicketFormat(ticketId)) {
+                res.status(400).json({ error: 'Invalid ticket ID format' });
+                return;
+            }
+
+            const userId = this.getUserId(req);
+
+            // Step 1: Check if ticket exists in Jira
+            let jiraIssue: any;
+            try {
+                const jiraAxios = getJiraAxios();
+                const response = await jiraAxios.get(`/rest/api/3/issue/${ticketId}`, {
+                    params: { fields: 'summary,description,status,issuetype' }
+                });
+                jiraIssue = response.data;
+            } catch (jiraErr: any) {
+                // Ticket not found in Jira
+                res.json({
+                    success: true,
+                    ticketId,
+                    ticketFound: false,
+                    status: 'not_found',
+                    message: `⚠️ Ticket "${ticketId}" not found in Jira. Please check the ticket ID and try again.`,
+                    options: [],
+                    recommendation: 'Verify the ticket ID is correct. Testing requires a valid Jira ticket.',
+                });
+                return;
+            }
+
+            const fields = jiraIssue.fields || {};
+            const issueType = fields.issuetype?.name || 'Unknown';
+            const currentStatus = fields.status?.name || 'Unknown';
+            const summary = fields.summary || '';
+            const description = TestCaseGeneratorService.extractTextFromADF(fields.description) || '';
+            const statusLower = currentStatus.toLowerCase();
+
+            // Step 2: Check if ticket type is valid for testing
+            const testingTypes = ['Bug', 'Story', 'Task']; // broad: allow Task
+            const isTestingType = testingTypes.some(t => issueType.toLowerCase() === t.toLowerCase());
+
+            if (!isTestingType) {
+                res.json({
+                    success: true,
+                    ticketId,
+                    ticketFound: true,
+                    ticketType: issueType,
+                    status: currentStatus,
+                    summary,
+                    message: `❌ "${ticketId}" is a **${issueType}**, not a Bug/Story ticket. Testing is only supported for Bug and Story tickets. Please make sure you typed a valid testing ticket.`,
+                    options: [],
+                    recommendation: 'Check the ticket type in Jira. Only Bug and Story tickets can be tested.',
+                    blocked: true,
+                });
+                return;
+            }
+
+            // Step 3: Check for existing session & results
+            const existingSession = await TestSessionCacheService.getSession(ticketId, userId);
+            const lastRunInfo = await TestSessionCacheService.getLastRunInfo(ticketId, userId);
+
+            // Step 4: Detect content drift
+            const summaryChanged = !!(existingSession && existingSession.jiraSnapshot && existingSession.jiraSnapshot.summary !== summary);
+            const descriptionChanged = !!(existingSession && existingSession.jiraSnapshot && existingSession.jiraSnapshot.description !== description);
+
+            const buildResponse = (statusCategory: string, message: string, options: any[], recommendation: string) => ({
+                success: true,
+                ticketId,
+                ticketFound: true,
+                ticketType: issueType,
+                status: currentStatus,
+                statusCategory,
+                summary,
+                message,
+                options,
+                recommendation,
+                hasSession: !!existingSession,
+                hasResults: !!lastRunInfo && lastRunInfo.hasResults,
+                lastRunAt: lastRunInfo?.lastRunAt,
+                lastRunSummary: lastRunInfo?.lastSummary,
+                syncRequired: summaryChanged || descriptionChanged,
+                changesDetected: {
+                    summaryChanged,
+                    descriptionChanged,
+                    previousSummary: existingSession?.jiraSnapshot?.summary,
+                    currentSummary: summary,
+                },
+            });
+
+            // Step 5: Determine response based on Jira status
+            const isDone = statusLower.includes('done') || statusLower.includes('closed') || statusLower.includes('resolved');
+            const isTesting = statusLower.includes('testing') || statusLower.includes('qa') || statusLower === 'in progress';
+            const isTodo = statusLower.includes('to do') || statusLower.includes('backlog') || statusLower.includes('open') || statusLower.includes('new');
+
+            if (isDone) {
+                // === DONE / BUG DONE ===
+                const wasTestedBefore = lastRunInfo?.hasResults;
+                res.json(buildResponse('done',
+                    `✅ "${ticketId}" is marked **${currentStatus}**. Testing is already complete for this ticket. You cannot restart testing. Need a new ticket or manually reopen the ticket in Jira.`,
+                    [],
+                    wasTestedBefore
+                        ? `Last execution: ${lastRunInfo.lastRunAt}. Results: ${lastRunInfo.lastSummary!.passed}/${lastRunInfo.lastSummary!.total} passed. Archive available via DELETE /:ticketId/session if needed.`
+                        : 'No previous testing record found for this ticket.'
+                ));
+                return;
+            }
+
+            if (isTesting) {
+                // === IN TESTING / QA ===
+                if (!existingSession && !lastRunInfo) {
+                    // No session, no results — fresh start
+                    res.json(buildResponse('in_testing',
+                        `🚀 "${ticketId}" is in **${currentStatus}**. Ready to begin testing. This will auto-transition the ticket if needed and create a new test session.`,
+                        [
+                            { action: 'start', label: 'Start Testing', endpoint: `POST /api/testing/${ticketId}/start` },
+                            { action: 'cancel', label: 'Cancel', endpoint: null },
+                        ],
+                        'Call start endpoint to begin the testing pipeline.'
+                    ));
+                    return;
+                }
+
+                if (lastRunInfo && lastRunInfo.hasResults && summaryChanged) {
+                    // Has results but content CHANGED significantly
+                    res.json(buildResponse('in_testing_changed',
+                        `⚠️ "${ticketId}" was previously tested. Last run: **${lastRunInfo.lastRunAt}**. Results: **${lastRunInfo.lastSummary!.passed}/${lastRunInfo.lastSummary!.total} passed**.\n\n**Jira content has changed** since last test run!\nPrevious: "${existingSession?.jiraSnapshot?.summary}"\nCurrent:  "${summary}"\n\nPrevious test results may be stale.`,
+                        [
+                            { action: 'restart', label: 'Restart (Recommended)', endpoint: `DELETE /api/testing/${ticketId}/session then POST /api/testing/${ticketId}/start` },
+                            { action: 'continue', label: 'Continue (re-run current tests)', endpoint: `POST /api/testing/${ticketId}/execute` },
+                            { action: 'exit', label: 'Exit (view only)', endpoint: null },
+                        ],
+                        'Content change detected. Recommended to restart testing with fresh test generation.'
+                    ));
+                    return;
+                }
+
+                if (lastRunInfo && lastRunInfo.hasResults) {
+                    // Has results, NO content change
+                    res.json(buildResponse('in_testing_synced',
+                        `✅ "${ticketId}" is in **${currentStatus}**. Last tested: **${lastRunInfo.lastRunAt}**. Results: **${lastRunInfo.lastSummary!.passed}/${lastRunInfo.lastSummary!.total} passed**. Content is unchanged.`,
+                        [
+                            { action: 'retry_failed', label: 'Retry failed only', endpoint: `POST /api/testing/${ticketId}/execute/retry` },
+                            { action: 'rerun', label: 'Full re-run', endpoint: `POST /api/testing/${ticketId}/execute` },
+                            { action: 'view', label: 'View results only', endpoint: `GET /api/testing/${ticketId}/session` },
+                            { action: 'exit', label: 'Exit', endpoint: null },
+                        ],
+                        'Tests were successful. Choose to retry failures, re-run all, or just view.'
+                    ));
+                    return;
+                }
+
+                // Has session but no results (started but not executed yet)
+                if (!lastRunInfo || !lastRunInfo.hasResults) {
+                    res.json(buildResponse('in_testing_partial',
+                        `"${ticketId}" has a session but no completed test runs. Current phase: **${existingSession?.phase}**.`,
+                        [
+                            { action: 'continue', label: 'Continue from current phase', endpoint: `POST /api/testing/${ticketId}/${existingSession?.phase === 'test_case_design' ? 'test-cases/generate' : 'execute'}` },
+                            { action: 'restart', label: 'Restart from scratch', endpoint: `DELETE /api/testing/${ticketId}/session then POST /api/testing/${ticketId}/start` },
+                            { action: 'cancel', label: 'Cancel session', endpoint: `POST /api/testing/${ticketId}/cancel` },
+                        ],
+                        'Session exists but tests not run yet. Continue or restart?'
+                    ));
+                    return;
+                }
+
+                res.json(buildResponse('in_testing_fallback',
+                    `"${ticketId}" is in **${currentStatus}**.`,
+                    [
+                        { action: 'start', label: 'Start Testing', endpoint: `POST /api/testing/${ticketId}/start` },
+                    ],
+                    ''
+                ));
+                return;
+            }
+
+            if (isTodo) {
+                res.json(buildResponse('to_do',
+                    `📋 "${ticketId}" is in **${currentStatus}**. Ready for testing. This will auto-transition to In Testing and create a new test session.`,
+                    [
+                        { action: 'start', label: 'Start Testing', endpoint: `POST /api/testing/${ticketId}/start` },
+                        { action: 'cancel', label: 'Cancel', endpoint: null },
+                    ],
+                    'Call /start to begin the testing pipeline: transition → scenario gen → test case design → execution.'
+                ));
+                return;
+            }
+
+            // Unknown / Other status
+            res.json(buildResponse('other',
+                `📌 "${ticketId}" is in **${currentStatus}**. This status is not standard for the testing pipeline. Recommend moving to "In Testing" first for proper tracking.`,
+                [
+                    { action: 'start', label: 'Start Testing (with auto-transition)', endpoint: `POST /api/testing/${ticketId}/start` },
+                    { action: 'cancel', label: 'Cancel', endpoint: null },
+                ],
+                'Unusual status. Testing can still start (auto-transition handles this).'
+            ));
+
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Refresh error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/sessions/cleanup
+     * Clean up stale sessions older than maxAgeHours.
+     */
+    static async cleanupSessions(req: Request, res: Response): Promise<void> {
+        try {
+            const maxAgeHours = parseInt(req.query.maxAgeHours as string) || 24;
+            const cleaned = await TestSessionCacheService.cleanupStaleSessions(maxAgeHours);
+            res.json({
+                success: true,
+                cleaned,
+                message: `Cleaned up ${cleaned} stale session(s) older than ${maxAgeHours} hours.`,
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Session cleanup error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/testing/discover
+     * Discover all UI elements on a specific page.
+     * Body: { hashRoute: "#/app.designation", moduleName: "Designation", deepScan: false }
+     */
+    static async discoverPage(req: Request, res: Response): Promise<void> {
+        try {
+            const { hashRoute, moduleName, deepScan = false } = req.body;
+
+            if (!hashRoute || !moduleName) {
+                res.status(400).json({
+                    error: 'Missing required fields: hashRoute and moduleName',
+                    example: { hashRoute: '#/app.designation', moduleName: 'Designation', deepScan: false },
+                });
+                return;
+            }
+
+            appLogger.info(`[TestingWorkflow] Discover: ${moduleName} (${hashRoute})`, {
+                source: 'TestingWorkflow',
+                module: moduleName,
+                route: hashRoute,
+                deepScan,
+            });
+
+            const { discoverSinglePage } = await import('../../scripts/discover-page');
+            const { FrontendTechnologyDetector } = await import('../services/FrontendTechnologyDetector');
+            const { UniversalPageModelService } = await import('../services/UniversalPageModelService');
+
+            // Emit discovery start
+            ProcessProgressService.discoveryProgress(moduleName || hashRoute,
+                `Starting page discovery for ${moduleName} (${hashRoute})...`,
+                20);
+
+            const inventory = await discoverSinglePage(hashRoute, moduleName, {
+                deepScan,
+                headless: true,
+            });
+            if (!inventory) {
+                ProcessProgressService.failed(moduleName || hashRoute,
+                    'Page discovery returned no inventory');
+                res.status(502).json({
+                    error: 'Page discovery returned no inventory',
+                    hint: 'Ensure the target page loaded successfully and discovery did not fail silently.',
+                });
+                return;
+            }
+
+            // Emit discovery mid-point
+            const elementCount = inventory.buttons.length + inventory.inputs.length +
+                inventory.dropdowns.length + inventory.grids.length + inventory.modals.length + inventory.tabs.length;
+            ProcessProgressService.discoveryProgress(moduleName || hashRoute,
+                `Discovered ${elementCount} elements, analyzing technology profile...`,
+                60,
+                { elementCount });
+
+            const pageModel = await UniversalPageModelService.buildEnhanced(inventory);
+            const technologyReport = pageModel.technologies;
+
+            // Emit discovery completion with technology profile
+            ProcessProgressService.discoveryProgress(moduleName || hashRoute,
+                `Discovery complete: Primary technology = ${technologyReport.primary}, ${pageModel.elements.length} actionable elements`,
+                100,
+                {
+                    technologyProfile: {
+                        primary: technologyReport.primary,
+                        detected: technologyReport.detected.map(t => ({ technology: t.technology, confidence: t.confidence })),
+                    },
+                    elementCount: pageModel.elements.length,
+                });
+
+            await res.json({
+                success: true,
+                moduleName,
+                hashRoute,
+                inventory,
+                technologyReport,
+                pageModel,
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Page discovery error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message, hint: 'Ensure the test site is accessible and baseline credentials are valid.' });
+        }
+    }
+
+    /**
+     * GET /api/testing/discover/all
+     * Discover elements on all known modules.
+     * Query: ?deepScan=true
+     */
+    static async discoverAllModules(req: Request, res: Response): Promise<void> {
+        try {
+            const deepScan = req.query.deepScan === 'true';
+
+            res.json({
+                status: 'started',
+                message: 'Full module discovery started. This may take several minutes.',
+                deepScan,
+            });
+
+            // Run discovery in background, results saved to repository + files
+            // Use setImmediate to not block the response
+            setImmediate(async () => {
+                try {
+                    const { discoverAllModules: runDiscovery } = await import('../../scripts/discover-page');
+                    const results = await runDiscovery(deepScan);
+
+                    const summary = results.map(r => ({
+                        moduleName: r.moduleName,
+                        hashRoute: r.hashRoute,
+                        elementCount: r.inventory ? (
+                            r.inventory.buttons.length +
+                            r.inventory.inputs.length +
+                            r.inventory.dropdowns.length +
+                            r.inventory.grids.length +
+                            r.inventory.tabs.length +
+                            r.inventory.modals.length +
+                            r.inventory.checkboxes.length +
+                            r.inventory.radios.length +
+                            r.inventory.other.length
+                        ) : 0,
+                        summary: r.inventory?.summary || 'FAILED',
+                        error: r.error || null,
+                    }));
+
+                    appLogger.info('[TestingWorkflow] Full discovery complete', {
+                        source: 'TestingWorkflow',
+                        modules: results.length,
+                        failed: results.filter(r => r.error).length,
+                        summary,
+                    });
+                } catch (err: any) {
+                    appLogger.error('[TestingWorkflow] Full discovery error', {
+                        source: 'TestingWorkflow',
+                        error: err.message,
+                    });
+                }
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Discover all modules error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    /**
+     * GET /api/testing/:ticketId/confidence
+     * Returns the AI confidence assessment for the current test generation session.
+     * Provides risk level, breakdown by pipeline stage, and actionable recommendations.
+     */
+    static async getConfidenceAssessment(req: Request, res: Response): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            const userId = this.getUserId(req);
+
+            const session = await TestSessionCacheService.getSession(ticketId, userId);
+            if (!session) {
+                res.status(404).json({
+                    success: false,
+                    message: `No session found for ticket ${ticketId}`,
+                });
+                return;
+            }
+
+            if (!session.confidenceAssessment) {
+                res.json({
+                    success: true,
+                    message: 'No confidence assessment available (tests not generated via AI pipeline)',
+                    hasAssessment: false,
+                });
+                return;
+            }
+
+            res.json({
+                success: true,
+                hasAssessment: true,
+                assessment: session.confidenceAssessment,
+            });
+        } catch (error: any) {
+            appLogger.error('[TestingWorkflow] Get confidence assessment error', { source: 'TestingWorkflow', error: error.message });
+            res.status(500).json({ error: error.message });
+        }
+    }
+}

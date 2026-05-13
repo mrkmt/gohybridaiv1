@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter.js DeepSeek Test</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #output { background: #f0f0f0; padding: 10px; border-radius: 5px; white-space: pre-wrap; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Puter.js DeepSeek Test</h1>
+    <p>This page uses Puter.js to call DeepSeek-V3.</p>
+    <button id="testBtn">Call DeepSeek</button>
+    <div id="status"></div>
+    <h3>Response:</h3>
+    <div id="output">Click the button to start...</div>
+
+    <script>
+        const testBtn = document.getElementById('testBtn');
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+
+        testBtn.onclick = async () => {
+            status.innerText = "Calling Puter AI...";
+            output.innerText = "Waiting for response...";
+            try {
+                const resp = await puter.ai.chat("Hello DeepSeek! Tell me a short joke.", {
+                    model: "deepseek/deepseek-v3"
+                });
+                output.innerText = typeof resp === 'string' ? resp : JSON.stringify(resp, null, 2);
+                status.innerText = "Done!";
+            } catch (err) {
+                output.innerText = "Error: " + err.message;
+                status.innerText = "Failed.";
+            }
+        };
+    </script>
+</body>
+</html>

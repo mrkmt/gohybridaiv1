@@ -1,0 +1,166 @@
+{
+  "name": "problem-solving-methodology",
+  "type": "reasoning-framework",
+  "version": "1.0.0",
+  "description": "Step-by-step thinking process and problem-solving methodology used by the AI agent when debugging, fixing, and building features.",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Understand The Problem",
+      "steps": [
+        "Read the user's description carefully - what they SEE vs what they EXPECT",
+        "Identify the specific error messages, logs, or symptoms mentioned",
+        "Determine if this is a NEW issue or a REGRESSION (worked before, broke now)",
+        "Check what SYSTEM components are involved (frontend, backend, API, database, Playwright)",
+        "Ask clarifying questions ONLY when critical information is missing"
+      ],
+      "rules": [
+        "Never assume - always verify by reading actual files and logs",
+        "Error messages are clues, not always the root cause",
+        "Distinguish between symptoms (what's visible) and root causes (what's broken)"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Investigate Evidence",
+      "steps": [
+        "Read the ACTUAL files mentioned in errors (source code, config, logs)",
+        "Search the codebase for relevant patterns (grep for error text, function names, class names)",
+        "Check if similar issues were solved before (search archives, history, documentation)",
+        "Run diagnostic commands to verify the current state (list files, check logs, run test commands)",
+        "Compare working vs broken versions (what changed between them?)"
+      ],
+      "rules": [
+        "File system truth > code comments > documentation > assumptions",
+        "Always read files before making changes to them",
+        "If something worked before, find what was different then vs now",
+        "Archives and history contain proven solutions - read them first"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Root Cause Analysis",
+      "steps": [
+        "Trace the data/control flow from entry point to failure point",
+        "For each step in the chain, ask: 'Could this be the source?'",
+        "Eliminate possibilities systematically until only one remains",
+        "Verify the root cause by: 'If I fix X, would the symptom disappear?'",
+        "Document the chain: Entry → Step A → Step B → FAILURE (root cause: X)"
+      ],
+      "common_root_causes": {
+        "windows_paths": "Paths with spaces break spawn/exec without proper quoting",
+        "angular_spa": "Angular apps never reach networkidle due to background polling",
+        "log_duplication": "Multiple code paths emitting same event (double-emit bug)",
+        "form_validation": "Angular reactive forms disable submit button when invalid",
+        "kendo_components": "Inner inputs don't have formcontrolname - it's on the wrapper",
+        "modal_vs_inline": "Forms can be modal dialogs OR inline panels - selectors differ",
+        "cache_state": "Old session/cache data makes system think it's resuming vs fresh start"
+      }
+    },
+    {
+      "phase": 4,
+      "name": "Design The Fix",
+      "steps": [
+        "Start with the MINIMAL change needed (change least code possible)",
+        "Check if the fix could break anything else (read surrounding code)",
+        "Prevent the class of bug, not just this instance (fix the pattern)",
+        "If a working solution existed before, adapt it instead of inventing new",
+        "Plan the fix in layers: Immediate fix → Pattern fix → Prevention"
+      ],
+      "principles": [
+        "Minimal change principle: Change the least code needed to fix the issue",
+        "Pattern fix principle: If the same bug can happen elsewhere, fix the pattern",
+        "Prevention principle: Add guards/validation to prevent recurrence",
+        "Reuse principle: Use existing code patterns, don't reinvent"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Implement The Fix",
+      "steps": [
+        "Make the code change (edit/add/delete files)",
+        "Run TypeScript compiler to verify no syntax/type errors",
+        "Run the specific test or scenario that was failing",
+        "If still failing, go back to Phase 2 (investigate) with new data",
+        "If passing, test edge cases and related functionality"
+      ],
+      "rules": [
+        "Always run TypeScript compiler before testing - catch errors early",
+        "Test the specific failure case first before testing broader functionality",
+        "If the fix doesn't work, don't add more fixes - find the REAL root cause",
+        "Document what was changed and WHY in comments or commit messages"
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Verify And Document",
+      "steps": [
+        "Run the full test suite to ensure no regressions",
+        "Verify the fix in the actual environment (not just unit tests)",
+        "Document the root cause and fix for future reference",
+        "Identify if other code has the same pattern that needs fixing",
+        "Update skill files or knowledge base with new learnings"
+      ],
+      "deliverables": [
+        "Clear summary of: What was broken, Why it broke, How it was fixed",
+        "List of files changed",
+        "Any remaining concerns or follow-up items",
+        "Updated skill files if new patterns were discovered"
+      ]
+    }
+  ],
+  "debugging_playbook": {
+    "playwright_fails": [
+      "Is it a path issue? Check for spaces in paths → use node.exe + cli.js",
+      "Is it a timeout? Angular SPA → use commit instead of networkidle",
+      "Is it a selector issue? Read actual HTML → find working selectors from harvester recordings",
+      "Is it a state issue? Check if previous test left dialogs/modals open",
+      "Is it an auth issue? Verify cookies/session are shared between tests"
+    ],
+    "test_generation_fails": [
+      "Check skill JSON file is valid (not corrupted, has required fields)",
+      "Check selectors use proper quote escaping (single quotes in selectors need escaping)",
+      "Check field names don't conflict (unique variable names for each field)",
+      "Check form actions are defined (buttonSelector, submitSelector must exist)",
+      "Check route/URL is correct (match what harvester recorded)"
+    ],
+    "log_duplication": [
+      "Search for all places that emit the same event",
+      "Check if callback ALSO emits (double-emit bug)",
+      "Check if console.log is intercepted AND original is called",
+      "Fix: Keep single source of truth, remove redundant emits"
+    ],
+    "api_returns_401": [
+      "Check if authentication cookie/token is being passed",
+      "Check if API URL matches the environment (test vs uat vs live)",
+      "Check if the API requires different auth than the frontend",
+      "Use page.evaluate() to call API from browser context (has cookies)"
+    ]
+  },
+  "knowledge_sources": {
+    "harvester_recordings": "D:\\KMT\\My class\\AI\\GoHybridAI\\_archive\\Manual Recordings\\ - Contains actual working selectors from real user sessions",
+    "skill_files": "D:\\KMT\\My class\\AI\\GoHybridAI\\backend\\skills\\GlobalHR\\forms\\ - Field selectors, test data, business rules per module",
+    "master_data_rules": "D:\\KMT\\My class\\AI\\GoHybridAI\\backend\\skills\\master-data-rules.json - Universal rules for all Master Data entities",
+    "navigation_patterns": "D:\\KMT\\My class\\AI\\GoHybridAI\\backend\\skills\\GlobalHR\\navigation-patterns.json - Common action selectors (Add New, Save, OK, etc.)",
+    "generic_crud_flow": "D:\\KMT\\My class\\AI\\GoHybridAI\\backend\\skills\\GlobalHR\\generic-crud-flow.json - Reusable CRUD flow templates",
+    "archive_conversations": "D:\\KMT\\My class\\AI\\GoHybridAI\\_archive\\ - Historical solutions, fixes, and debugging sessions"
+  },
+  "decision_tree": {
+    "user_reports_bug": "→ Phase 1: Understand → Phase 2: Investigate → Phase 3: Root Cause → Phase 4: Design Fix → Phase 5: Implement → Phase 6: Verify",
+    "user_requests_feature": "→ Check skill files for existing knowledge → Use generic patterns if no specific knowledge → Build incrementally → Test each step",
+    "user_asks_why_something_fails": "→ Read actual error logs → Trace execution flow → Find first failure point → Explain the chain",
+    "test_execution_fails": "→ Check Playwright path quoting → Check navigation wait strategy → Check form selectors from harvester → Check API responses",
+    "test_generation_fails": "→ Check skill file is valid JSON → Check selectors have proper escaping → Check field types are supported → Check form actions exist"
+  },
+  "anti_patterns": [
+    "Never add more code to work around a bug - fix the root cause",
+    "Never assume a file exists or has certain content - read it first",
+    "Never change multiple things at once - isolate the change",
+    "Never skip verification - always run the test/compiler after changes",
+    "Never ignore historical data - archives contain proven solutions",
+    "Never create duplicate functionality - reuse existing services/functions",
+    "Never leave debug logging in production code - clean up after debugging"
+  ],
+  "source": "Derived from actual problem-solving sessions across ATT-13, ATT-16, and system debugging (March-April 2026)",
+  "createdAt": "2026-04-04"
+}

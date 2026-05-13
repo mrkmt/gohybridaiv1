@@ -1,0 +1,226 @@
+{
+  "description": "Master Data configuration rules for ALL 10 GlobalHR foundational entities. Source: Knowledge/Master.docx",
+  "entities": {
+    "CompanyProfile": {
+      "menu": "Master > Company Profile",
+      "url": "#/app.companyprofile",
+      "fields": [
+        "Name",
+        "Email",
+        "Phone",
+        "Fax",
+        "Address",
+        "Website",
+        "SSB Register No.",
+        "Leave Period",
+        "Budget Period"
+      ],
+      "tabs": [
+        "Basic Information",
+        "Generate Number",
+        "Additional Information"
+      ],
+      "options": [
+        "Use this Company as Default"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "Department": {
+      "menu": "Master > Department",
+      "url": "#/app.department",
+      "fields": [
+        "Short Code (max 5 chars)",
+        "Name",
+        "Order",
+        "Company (dropdown)",
+        "Parent Department (dropdown)",
+        "Shift (dropdown)"
+      ],
+      "options": [
+        "Use this department as Default"
+      ],
+      "hasShortCode": true,
+      "hasGrade": false
+    },
+    "Grade": {
+      "menu": "Master > Grade",
+      "url": "#/app.grade",
+      "fields": [
+        "Name",
+        "Order",
+        "Upper Grade (dropdown)"
+      ],
+      "options": [
+        "Default",
+        "Topmost (optional)"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "Designation": {
+      "menu": "Master > Designation",
+      "url": "#/app.designation",
+      "fields": [
+        "Short Code (max 5 chars)",
+        "Name",
+        "Order",
+        "Grade (dropdown)"
+      ],
+      "options": [
+        "Use this Designation as Default"
+      ],
+      "hasShortCode": true,
+      "hasGrade": false
+    },
+    "TeamSetup": {
+      "menu": "Master > Team Setup",
+      "url": "#/app.teamsetup",
+      "fields": [
+        "Name",
+        "Description",
+        "Product (dropdown)",
+        "Type (Team/Project)"
+      ],
+      "options": [
+        "Inactive"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "LabelSetup": {
+      "menu": "Master > Label Setup",
+      "url": "#/app.labelsetup",
+      "fields": [
+        "Name",
+        "Description",
+        "Type (dropdown: Claim/Attendance/OT/Leave)"
+      ],
+      "options": [
+        "Inactive"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "LeaveType": {
+      "menu": "Master > Leave Type",
+      "url": "#/app.leavetype",
+      "fields": [
+        "Short Code (max 5 chars)",
+        "Name",
+        "Gender Option (Maternity=Female, Paternity=Male)",
+        "Use reason mandatory (checkbox)",
+        "File attachment option (dropdown)",
+        "Import-only (checkbox)"
+      ],
+      "options": [
+        "Inactive"
+      ],
+      "hasShortCode": true,
+      "hasGrade": false
+    },
+    "Keyword": {
+      "menu": "Master > Keyword",
+      "url": "#/app.keyword",
+      "fields": [
+        "Name"
+      ],
+      "subtypes": [
+        "Division",
+        "Location",
+        "Section",
+        "Group",
+        "Cost Center"
+      ],
+      "options": [
+        "Default (optional)",
+        "Inactive"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "PublicHoliday": {
+      "menu": "Master > Public Holiday",
+      "url": "#/app.publicholiday",
+      "fields": [
+        "Date or Date Range",
+        "Description (holiday name)"
+      ],
+      "options": [
+        "Use this holiday as default (for fixed-date holidays)"
+      ],
+      "actions": [
+        "Manual Add",
+        "Generate by Year (Default Option)",
+        "Generate from Government Holiday"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    },
+    "GPSLocation": {
+      "menu": "Master > GPS Location",
+      "url": "#/app.gpslocation",
+      "fields": [
+        "Name"
+      ],
+      "methods": {
+        "ByMap": [
+          "Search location",
+          "Set radius"
+        ],
+        "ByLocation": [
+          "Country (dropdown)",
+          "Division (dropdown)",
+          "District (dropdown)",
+          "Township (dropdown)"
+        ]
+      },
+      "options": [
+        "Include Inactive",
+        "Active Only"
+      ],
+      "hasShortCode": false,
+      "hasGrade": false
+    }
+  },
+  "universalRules": {
+    "shortCodeMaxLength": 5,
+    "shortCodeAppliesTo": [
+      "Department",
+      "Designation",
+      "Leave Type"
+    ],
+    "commonActions": [
+      "Add New",
+      "Edit",
+      "Delete",
+      "Import from Excel",
+      "Export to Excel"
+    ],
+    "commonFilters": [
+      "Include Inactive",
+      "Active Only",
+      "Inactive Only"
+    ],
+    "commonOptions": [
+      "Use as Default"
+    ],
+    "formControlNames": {
+      "ShortCode": "ShortCode",
+      "Name": "Name",
+      "Description": "Description"
+    }
+  },
+  "selectors": {
+    "addNewButton": "button:has-text(\"Add New\"), button:has-text(\"Add\"), .btn.btn-primary:has-text(\"Add\")",
+    "saveButton": "button:has-text(\"Save\"), button:has-text(\"Submit\"), .btn.btn-success:has-text(\"Save\")",
+    "updateButton": "button:has-text(\"Update\"), button:has-text(\"Save\"), .btn.btn-success:has-text(\"Update\")",
+    "deleteButton": "button:has-text(\"Delete\"), .btn.btn-danger:has-text(\"Delete\"), [title=\"Delete\"]",
+    "okButton": "button:has-text(\"Ok\"), button:has-text(\"OK\")",
+    "yesButton": "button:has-text(\"Yes\"), button:has-text(\"Confirm\")",
+    "searchBox": "input[placeholder*=\"Search\"], input[placeholder*=\"Filter\"]",
+    "shortCodeInput": "input[formcontrolname=\"ShortCode\"], input[name=\"Short Code\"]",
+    "nameInput": "input[formcontrolname=\"Name\"], input[name=\"Name\"]"
+  },
+  "template": "### GlobalHR Master Data Rules\nYou are generating automated tests for GlobalHR Cloud Master Data entities.\n\n## UNIVERSAL RULES\n- Short Code fields are limited to 5 characters maximum\n- Short Code applies to: Department, Designation, Leave Type\n- All entities support: Add New, Edit, Delete, Import from Excel, Export to Excel\n- All entities support: Include Inactive / Active Only filters\n- Many entities support: 'Use as Default' option\n\n## ENTITY SPECIFICATIONS\nFor each Master Data entity, use the fields, options, and selectors defined in the entities object.\n\n## CRITICAL BUSINESS RULES\n1. Department requires a Company dropdown selection\n2. Designation requires a Grade dropdown selection\n3. Leave Type has gender-specific options (Maternity for Female, Paternity for Male)\n4. Public Holiday can be generated by year or from government holiday data\n5. GPS Location has two methods: By Map (search + radius) or By Location (country/division/district/township)\n\n## NEGATIVE TEST SCENARIOS\n1. Short Code exceeds 5 characters → should truncate or show validation error\n2. Duplicate Short Code → should show 'already exists' error\n3. Required Name field blank → should show 'required' validation\n4. Delete entity still referenced by other records → should show dependency error"
+}

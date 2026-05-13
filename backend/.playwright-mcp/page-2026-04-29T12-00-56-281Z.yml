@@ -1,0 +1,236 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - text: "HELP : 09 9400 505 00"
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link [ref=e10] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - button [ref=e11]:
+                - img [ref=e12]
+          - listitem [ref=e14]:
+            - link [ref=e15] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img [ref=e17]
+    - link [ref=e18] [cursor=pointer]:
+      - /url: javascript:void(0)
+    - navigation [ref=e20]:
+      - link [ref=e21] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - region [ref=e479]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - img [ref=e480]
+            - generic [ref=e31]:
+              - generic [ref=e32]: testook_HR 1
+              - text: Accountant
+          - generic [ref=e34]:
+            - button [ref=e481] [cursor=pointer]:
+              - img [ref=e36]
+              - generic [ref=e38]: Dashboard
+            - button [ref=e482] [cursor=pointer]:
+              - img [ref=e41]
+              - generic [ref=e43]: Master
+              - img [ref=e45]
+            - button [ref=e483] [cursor=pointer]:
+              - img [ref=e49]
+              - generic [ref=e51]: Setup
+              - img [ref=e53]
+            - button [ref=e484] [cursor=pointer]:
+              - img [ref=e57]
+              - generic [ref=e59]: Employee
+              - img [ref=e61]
+            - button [ref=e485] [cursor=pointer]:
+              - img [ref=e65]
+              - generic [ref=e67]: Time Attendance
+              - img [ref=e69]
+            - button [ref=e486] [cursor=pointer]:
+              - img [ref=e73]
+              - generic [ref=e75]: Human Resource
+              - img [ref=e77]
+            - button [ref=e487] [cursor=pointer]:
+              - img [ref=e81]
+              - generic [ref=e83]: Payroll Management
+              - img [ref=e85]
+            - button [ref=e488] [cursor=pointer]:
+              - img [ref=e89]
+              - generic [ref=e91]: User Level Management
+              - img [ref=e93]
+            - button [ref=e489] [cursor=pointer]:
+              - img [ref=e97]
+              - generic [ref=e99]: System
+              - img [ref=e101]
+            - button [ref=e490] [cursor=pointer]:
+              - img [ref=e105]
+              - generic [ref=e107]: Report
+              - img [ref=e109]
+            - button [ref=e491] [cursor=pointer]:
+              - img [ref=e113]
+              - generic [ref=e115]: Recruitment
+              - img [ref=e117]
+            - button [ref=e492] [cursor=pointer]:
+              - img [ref=e121]
+              - generic [ref=e123]: Claim
+              - img [ref=e125]
+            - button [ref=e493] [cursor=pointer]:
+              - img [ref=e129]
+              - generic [ref=e131]: Performance Appraisal
+              - img [ref=e133]
+            - button [ref=e494] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e139]: Daily Tasks
+              - img [ref=e141]
+            - button [ref=e495] [cursor=pointer]:
+              - img [ref=e145]
+              - generic [ref=e147]: Review & Appraisal
+              - img [ref=e149]
+    - generic [ref=e361]:
+      - generic [ref=e362]:
+        - generic [ref=e363]:
+          - heading [level=2] [ref=e496]: Leave Policy
+          - list [ref=e365]:
+            - listitem [ref=e366]:
+              - link [ref=e367] [cursor=pointer]:
+                - /url: /ook#/dashboard
+                - img [ref=e368]
+            - listitem [ref=e370]:
+              - text: /
+              - link [ref=e497] [cursor=pointer]:
+                - /url: javascript:void(0);
+                - text: Master
+            - listitem [ref=e372]: / Leave Policy
+        - button [ref=e374] [cursor=pointer]:
+          - img [ref=e375]
+      - generic [ref=e377]:
+        - generic [ref=e381]:
+          - generic [ref=e382]:
+            - textbox [ref=e498]:
+              - /placeholder: Search in leave policy...
+            - img [ref=e385]
+          - region [ref=e499]:
+            - generic [ref=e392]:
+              - link [ref=e500] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Contract Policy by KMT
+              - link [ref=e501] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: NHHMLeavePolicy2
+              - link [ref=e502] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Test_KMT
+              - link [ref=e503] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: no delete
+              - link [ref=e504] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Test tt
+              - link [ref=e505] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: TTM's Leave Policy
+              - link [ref=e506] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: test restriction
+              - link [ref=e507] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: testak
+              - link [ref=e508] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: leavepolicytest
+              - link [ref=e509] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Testdemo1
+              - link [ref=e510] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Testdemo3
+              - link [ref=e511] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Testdemo4
+              - link [ref=e512] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Testdemo5
+              - link [ref=e513] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: DecLeave
+              - link [ref=e514] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: test9350
+              - link [ref=e515] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: YMLeave2
+              - link [ref=e516] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Testing Leave
+              - link [ref=e517] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Eimon Leave
+              - link [ref=e518] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: YMLeav3
+              - link [ref=e519] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: MoeLeavePolicyUpdate
+              - link [ref=e520] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: One transaction
+              - link [ref=e521] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: ymonetransaction
+              - link [ref=e522] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: ymonetransaction2
+              - link [ref=e523] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: test leave policy 2
+              - link [ref=e524] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: inactive leave policy
+              - link [ref=e525] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: Com-7
+              - link [ref=e526] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: testleaveak
+              - link [ref=e527] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: teret
+              - link [ref=e528] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: EMT New1
+              - link [ref=e529] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - text: myo
+        - generic [ref=e454]:
+          - generic [ref=e455]:
+            - tablist [ref=e457]:
+              - tab [selected] [ref=e530]:
+                - generic [ref=e460] [cursor=pointer]: Policy Group
+              - tab [ref=e531]:
+                - generic [ref=e463] [cursor=pointer]: Leave Policy List
+            - tabpanel [ref=e532]:
+              - generic [ref=e466]:
+                - textbox [ref=e533]
+                - generic: Leave Policy Name
+              - generic [ref=e469]:
+                - switch [ref=e470] [cursor=pointer]:
+                  - generic [ref=e471]:
+                    - generic [ref=e472]: "ON"
+                    - generic [ref=e473]: "OFF"
+                - generic [ref=e475]: Current Leave Policy As Default
+              - generic [ref=e476]:
+                - checkbox [ref=e534] [cursor=pointer]
+                - text: Inactive
+          - generic [ref=e478]:
+            - button [disabled]: Save
+  - text: 
+  - dialog [ref=e536]:
+    - document:
+      - generic [ref=e539]:
+        - generic [ref=e540]:
+          - heading "Leave Policy" [level=3] [ref=e542]
+          - button "Close" [active] [ref=e544] [cursor=pointer]:
+            - generic [ref=e545]: 🗙
+        - generic [ref=e546]: Please select at least one leave type!
+        - button "Ok" [ref=e548] [cursor=pointer]

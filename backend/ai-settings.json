@@ -1,0 +1,51 @@
+{
+  "//": "AI Controller Settings — Edit this file to swap models without code changes.",
+  "//": "Reloaded on server restart. Changes take effect immediately for new requests.",
+
+  "mode": "cli_only",
+  "//_mode": "cli_only | hybrid | http_only. Use 'cli_only' to disable all HTTP API calls (OpenRouter, etc.)",
+
+  "roles": {
+    "//": "Each role maps to a CLI model. CLI models use Gemini CLI, Qwen CLI, or Codex CLI.",
+    "//": "Valid model values: 'qwen' | 'gemini' | 'codex'",
+
+    "TEST_GENERATION": "gemini",
+    "//_TEST_GENERATION": "Gemini CLI → generates test scenarios and test cases (JSON spec)",
+
+    "CODE": "qwen",
+    "//_CODE": "Qwen CLI → writes Playwright TypeScript scripts from JSON spec",
+
+    "INVESTIGATOR": "gemini",
+    "//_INVESTIGATOR": "Gemini CLI → self-healing diagnostics and failure analysis",
+
+    "REASONING": "gemini",
+    "DOCUMENTATION": "gemini",
+    "QUICK": "qwen",
+    "BUSINESS_LOGIC": "gemini",
+    "ARCHITECT": "gemini",
+    "REVIEWER": "qwen",
+    "ANALYST": "gemini"
+  },
+
+  "fallback": {
+    "//": "When the primary model for a role fails, try these models in order.",
+    "//": "Leave empty [] to disable fallback (fail fast).",
+    "enabled": true,
+    "chain": ["gemini", "qwen", "codex"],
+    "httpFallback": true,
+    "//_httpFallback": "When all CLI models fail, use OpenRouter HTTP API as last resort"
+  },
+
+  "timeouts": {
+    "//": "Timeouts in milliseconds for each CLI model.",
+    "qwen": 300000,
+    "gemini": 300000,
+    "codex": 300000
+  },
+
+  "circuitBreaker": {
+    "//": "Stop trying a model after N consecutive failures. Auto-recover after M seconds.",
+    "failureThreshold": 3,
+    "recoveryTimeoutMs": 120000
+  }
+}

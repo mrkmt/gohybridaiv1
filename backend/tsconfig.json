@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "types": ["node", "jest"]
+  },
+  "include": ["api/**/*.ts", "src/**/*.ts", "*.ts"],
+  "exclude": ["node_modules", "tests/generated/**", "tests/_archive_tickets/**", "tests/playwright/**", "src/helpers/**"]
+}

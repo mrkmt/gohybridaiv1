@@ -1,0 +1,5 @@
+2026/04/29-12:29:44.982 13c4dc Creating DB /home/gwtuser/go-hybridai/V1/backend/.playwright-mcp/profile-1777442379735-688/Default/Local Storage/leveldb since it was missing.
+2026/04/29-12:29:45.043 13c4dc Reusing MANIFEST /home/gwtuser/go-hybridai/V1/backend/.playwright-mcp/profile-1777442379735-688/Default/Local Storage/leveldb/MANIFEST-000001
+2026/04/29-12:34:46.759 13c4de Level-0 table #5: started
+2026/04/29-12:34:46.765 13c4de Level-0 table #5: 63829 bytes OK
+2026/04/29-12:34:46.769 13c4de Delete type=0 #3

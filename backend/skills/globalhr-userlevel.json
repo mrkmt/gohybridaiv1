@@ -1,0 +1,42 @@
+{
+    "description": "Investigation rules for GlobalHR User Level configuration issues. Teaches AI to diagnose login failures, permission errors, and 404s based on User Level Config fields.",
+    "module": "User Level Setup (Name Config)",
+    "fields": {
+        "User Level": "Permission level name identifier",
+        "Description": "What this permission level allows",
+        "Restricted IP List": "IP addresses that are blocked or allowed for this level",
+        "Menu List": "URLs/pages this user level can access",
+        "Employee List": "Employees assigned to this user level",
+        "Allow Web Login": "Boolean - can users login via browser",
+        "Allow Mobile Login": "Boolean - can users login via mobile app",
+        "AccessNewEmployee": "Can view and create new employee records",
+        "Inactive": "Is this user level disabled (all users blocked)",
+        "Access Profile Change Noti": "Can receive profile change notification alerts"
+    },
+    "investigationRules": {
+        "LOGIN_FAILED": [
+            "Check if the User Level assigned to the user has Inactive = true (disabled level blocks all login)",
+            "Check Restricted IP List for the user's IP address range (blocked IP → login denied)",
+            "Check Allow Web Login flag (false → browser login blocked, only mobile allowed)",
+            "Check Menu List for login redirect URL (missing dashboard/home URL → 404 after successful auth)",
+            "Check Employee List to verify the user is actually assigned to this level"
+        ],
+        "PAGE_404": [
+            "Check Menu List does not contain the target page URL (missing menu permission → 404)",
+            "Check if User Level was recently created and default menus were not assigned",
+            "Check if the URL path is correct in the menu configuration (typo or version mismatch)"
+        ],
+        "PERMISSION_DENIED": [
+            "Check Menu List for the specific page the user cannot access",
+            "Check AccessNewEmployee flag if the error is on the New Employee page",
+            "Check Access Profile Change Noti flag if notification page fails",
+            "Check if user's level has been changed recently (level downgrade removed permissions)"
+        ],
+        "API_ERROR": [
+            "Check network response codes: 401 = auth issue, 403 = permission, 404 = endpoint not found",
+            "Check if the API endpoint URL is included in the Menu List",
+            "Check if session token expired (re-login required)"
+        ]
+    },
+    "template": "### GlobalHR User Level Investigation Rules\nYou are investigating a bug report related to the GlobalHR Cloud HR system.\n\n## User Level Configuration\nGlobalHR uses a 'User Level' system to control access. Each User Level has:\n- **Inactive flag**: If true, ALL users with this level are blocked from login\n- **Restricted IP List**: IP addresses that are blocked/allowed\n- **Allow Web Login**: If false, browser login is blocked\n- **Allow Mobile Login**: If false, mobile app login is blocked\n- **Menu List**: URLs/pages accessible to this level (missing URL = 404)\n- **Employee List**: Users assigned to this level\n- **AccessNewEmployee**: Permission to view New Employee page\n- **Access Profile Change Noti**: Permission to receive profile change alerts\n\n## Investigation Priority\nWhen analyzing a LOGIN_FAILED issue:\n1. First check Inactive flag (quickest to verify)\n2. Then check Allow Web Login / Allow Mobile Login\n3. Then check Restricted IP List\n4. Then check Employee List assignment\n5. Finally check Menu List for post-login redirect URLs\n\nWhen analyzing a PAGE_404 issue:\n1. Check Menu List for the target URL\n2. Check if level was recently created (missing defaults)\n\nWhen analyzing PERMISSION_DENIED:\n1. Check specific feature flags (AccessNewEmployee, etc)\n2. Check Menu List for the page\n\n## Output Format\nFor each investigation check, output:\n- Check description\n- What to verify (specific UI location or API endpoint)\n- Expected result vs possible failure\n- Suggested Playwright test step to verify"
+}

@@ -1,0 +1,195 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - text: "HELP : 09 9400 505 00"
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link [active] [ref=e10] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - button [ref=e11]:
+                - img [ref=e12]
+          - listitem [ref=e14]:
+            - link [ref=e15] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img [ref=e17]
+    - generic:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - navigation [ref=e20]:
+        - link [ref=e21] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - region "scrollable content" [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - img "Profile Image" [ref=e121]
+              - generic [ref=e29]:
+                - generic [ref=e30]: testook_HR 1
+                - text: Accountant
+            - generic [ref=e32]:
+              - button "Dashboard" [ref=e33] [cursor=pointer]:
+                - img [ref=e34]
+                - generic [ref=e36]: Dashboard
+              - button "Master" [ref=e123] [cursor=pointer]:
+                - img [ref=e124]
+                - generic [ref=e126]: Master
+                - img [ref=e128]
+              - button "Setup" [ref=e131] [cursor=pointer]:
+                - img [ref=e132]
+                - generic [ref=e134]: Setup
+                - img [ref=e136]
+              - button "Employee" [ref=e139] [cursor=pointer]:
+                - img [ref=e140]
+                - generic [ref=e142]: Employee
+                - img [ref=e144]
+              - button "Time Attendance" [ref=e147] [cursor=pointer]:
+                - img [ref=e148]
+                - generic [ref=e150]: Time Attendance
+                - img [ref=e152]
+              - button "Human Resource" [ref=e155] [cursor=pointer]:
+                - img [ref=e156]
+                - generic [ref=e158]: Human Resource
+                - img [ref=e160]
+              - button "Payroll Management" [ref=e163] [cursor=pointer]:
+                - img [ref=e164]
+                - generic [ref=e166]: Payroll Management
+                - img [ref=e168]
+              - button "User Level Management" [ref=e171] [cursor=pointer]:
+                - img [ref=e172]
+                - generic [ref=e174]: User Level Management
+                - img [ref=e176]
+              - button "System" [ref=e179] [cursor=pointer]:
+                - img [ref=e180]
+                - generic [ref=e182]: System
+                - img [ref=e184]
+              - button "Report" [ref=e187] [cursor=pointer]:
+                - img [ref=e188]
+                - generic [ref=e190]: Report
+                - img [ref=e192]
+              - button "Recruitment" [ref=e195] [cursor=pointer]:
+                - img [ref=e196]
+                - generic [ref=e198]: Recruitment
+                - img [ref=e200]
+              - button "Claim" [ref=e203] [cursor=pointer]:
+                - img [ref=e204]
+                - generic [ref=e206]: Claim
+                - img [ref=e208]
+              - button "Performance Appraisal" [ref=e211] [cursor=pointer]:
+                - img [ref=e212]
+                - generic [ref=e214]: Performance Appraisal
+                - img [ref=e216]
+              - button "Daily Tasks" [ref=e219] [cursor=pointer]:
+                - img [ref=e220]
+                - generic [ref=e222]: Daily Tasks
+                - img [ref=e224]
+              - button "Review & Appraisal" [ref=e227] [cursor=pointer]:
+                - img [ref=e228]
+                - generic [ref=e230]: Review & Appraisal
+                - img [ref=e232]
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e42]: Permanent
+          - generic [ref=e43]:
+            - button [ref=e44] [cursor=pointer]:
+              - img [ref=e45]
+            - button [ref=e47] [cursor=pointer]:
+              - img [ref=e48]
+            - button [ref=e50] [cursor=pointer]:
+              - img [ref=e51]
+            - button [ref=e53] [cursor=pointer]:
+              - img [ref=e54]
+        - generic: 
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - heading "Welcome Back ! Hello testook_HR, Good Afternoon" [level=3] [ref=e59]:
+              - generic [ref=e60]: Welcome Back !
+              - strong [ref=e61]: Hello testook_HR,
+              - text: Good Afternoon
+            - generic [ref=e64]:
+              - combobox [ref=e66]: 2026 May 02
+              - button "Toggle calendar" [ref=e67] [cursor=pointer]:
+                - generic [ref=e69]:
+                  - img
+          - generic [ref=e71]:
+            - generic [ref=e75]:
+              - heading "Permanent Employee List" [level=3] [ref=e78]
+              - generic [ref=e79]:
+                - generic [ref=e234]: 1 employees will be permanent in May
+                - generic [ref=e82]:
+                  - generic [ref=e83]:
+                    - combobox [ref=e85]: 2026 May
+                    - button "Toggle calendar" [ref=e86] [cursor=pointer]:
+                      - generic [ref=e88]:
+                        - img
+                  - button "View Detail" [ref=e89] [cursor=pointer]:
+                    - img [ref=e90]
+                    - text: View Detail
+              - grid "Data table" [ref=e94]:
+                - rowgroup [ref=e98]:
+                  - row "testook_staff A990 05-29-2026" [ref=e235]:
+                    - gridcell "testook_staff A990 05-29-2026" [ref=e236]:
+                      - generic [ref=e237]:
+                        - img [ref=e238]
+                        - generic [ref=e239]:
+                          - strong [ref=e241]: testook_staff A990
+                          - text: 05-29-2026
+            - generic [ref=e103]:
+              - generic [ref=e104]:
+                - heading "Organization Structure" [level=3] [ref=e105]:
+                  - strong [ref=e106]: Organization
+                  - text: Structure
+                - button [ref=e107] [cursor=pointer]:
+                  - img [ref=e108]
+              - region "scrollable content" [ref=e114]:
+                - tree [ref=e243]:
+                  - treeitem "Win Htike Hein" [expanded] [level=1] [ref=e244]:
+                    - generic [ref=e245]:
+                      - generic [ref=e248] [cursor=pointer]:
+                        - img
+                      - checkbox [ref=e250] [cursor=pointer]
+                      - generic [ref=e252]:
+                        - img [ref=e253]
+                        - text: Win Htike Hein
+                    - group [ref=e255]:
+                      - treeitem "company_kmt" [expanded] [level=2] [ref=e256]:
+                        - generic [ref=e257]:
+                          - generic [ref=e260] [cursor=pointer]:
+                            - img
+                          - checkbox [ref=e262] [cursor=pointer]
+                          - generic [ref=e264]:
+                            - img [ref=e265]
+                            - text: company_kmt
+                        - group [ref=e267]:
+                          - treeitem "testdepartment_kmt" [level=3] [ref=e268]:
+                            - generic [ref=e269]:
+                              - generic [ref=e272] [cursor=pointer]:
+                                - img
+                              - checkbox [ref=e274] [cursor=pointer]
+                              - generic [ref=e276]:
+                                - img [ref=e277]
+                                - text: testdepartment_kmt
+                          - treeitem "Testdepartment_C" [level=3] [ref=e279]:
+                            - generic [ref=e280]:
+                              - checkbox [ref=e282] [cursor=pointer]
+                              - generic [ref=e284]:
+                                - img [ref=e285]
+                                - text: Testdepartment_C
+                          - treeitem "Contract Department" [level=3] [ref=e287]:
+                            - generic [ref=e288]:
+                              - checkbox [ref=e290] [cursor=pointer]
+                              - generic [ref=e292]:
+                                - img [ref=e293]
+                                - text: Contract Department
+          - generic: 
+      - generic [ref=e116]:
+        - link "Terms and Condition" [ref=e117] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - generic [ref=e118]:
+          - text: Copyright © 2022
+          - link "GlobalHR" [ref=e119] [cursor=pointer]:
+            - /url: https://www.globalhr.com.mm/
+          - text: v 2.0.0
+  - text: 

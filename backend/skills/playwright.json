@@ -1,0 +1,17 @@
+{
+    "description": "Standards for high-quality Playwright TypeScript generation with URL parameterization, event deduplication, and API forensic auditing",
+    "requiredImports": [
+        "import { test, expect } from '@playwright/test';"
+    ],
+    "standards": [
+        "Use environment variables for URLs: page.goto(`${process.env.BASE_URL}/${process.env.CUSTOMER_ID}/login`)",
+        "Use environment variables for credentials: process.env.TEST_USER, process.env.TEST_PASS",
+        "Use test.step() for logical grouping of actions.",
+        "Include user annotations as comments: // Note from Harvester: ...",
+        "API Auditing: Use page.waitForResponse() for critical fetch events.",
+        "Combine input-typed + blur/change events on same element into a single .fill() action.",
+        "Ignore isolated focus/mouseenter events unless needed to reveal dropdowns.",
+        "Navigation after click should use page.waitForURL() not page.goto()."
+    ],
+    "template": "### Playwright Script Generation Standards\nFollow these strict rules for outputting TypeScript code:\n\n## 1. URL PARAMETERIZATION (CRITICAL)\nNEVER hardcode the full URL (e.g., 'https://test.globalhr.com.mm/ook/login').\nAlways use Environment Variables:\n- Domain: `process.env.BASE_URL` (e.g., https://test.globalhr.com.mm)\n- Customer Path: `process.env.CUSTOMER_ID` (e.g., ook)\n- Credentials: `process.env.TEST_USER` and `process.env.TEST_PASS`\nExample: `await page.goto(`${process.env.BASE_URL}/${process.env.CUSTOMER_ID}/login`);`\n\n## 2. LOGICAL GROUPING\nGroup related actions into steps using `await test.step('Description', async () => { ... });`\n\n## 3. USER ANNOTATIONS\nIf the JSON data contains a \"note\" or \"annotation\", include it as a descriptive comment:\n`// Note from Harvester: Make sure to select the correct date format here`\n\n## 4. EVENT DEDUPLICATION & SANITIZATION\nThe JSON logs contain raw, noisy browser events. You MUST clean them:\n1. **Combine Inputs:** If `input-typed` is immediately followed by `blur` or `change` on the SAME element, treat as a SINGLE `await page.locator(...).fill(...)` action.\n2. **Ignore Focus/Hover:** Ignore isolated `focus` or `mouseenter` events unless they reveal a dropdown.\n3. **Sequence Correction:** If a `click` event (like form submit) is followed by a `navigate` to the expected page, use `await page.waitForURL(...)` instead of `page.goto(...)`.\n\n## 5. API FORENSIC AUDITING\nIf the JSON shows `fetch` events (API requests triggered by user actions), generate code to wait for and assert the response:\n```typescript\nconst [response] = await Promise.all([\n  page.waitForResponse(res => res.url().includes('GetAttendanceSummaryCount') && res.status() === 200),\n  page.locator('button[type=\"submit\"]').click()\n]);\nexpect(response.ok()).toBeTruthy();\n```\n\n## 6. IMPORTS\nAlways include: `import { test, expect } from '@playwright/test';`"
+}

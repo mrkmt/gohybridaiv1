@@ -1,0 +1,37 @@
+{
+    "description": "Reproduction workflow skill for generating admin setup + test execution plans. Template-driven, stateless - AI fills the template with user-provided data.",
+    "adminSetupSteps": {
+        "USER_LEVEL_CREATE": {
+            "menu": "Name Config > User Level Setup > User Level Control",
+            "fields": [
+                "User Level Name",
+                "Description",
+                "Allow Web Login",
+                "Allow Mobile Login",
+                "Restricted IP List",
+                "Inactive"
+            ],
+            "action": "Create new or find existing User Level matching reported config"
+        },
+        "MENU_PERMISSION": {
+            "menu": "Name Config > User Level Setup > Access Menu Permission",
+            "fields": [
+                "Menu URL List"
+            ],
+            "action": "Assign menu permissions to the User Level"
+        },
+        "EMPLOYEE_SETUP": {
+            "menu": "Employee > Employee Setup",
+            "fields": [
+                "Employee Code",
+                "Employee Name",
+                "User Level"
+            ],
+            "action": "Find or create employee, assign User Level"
+        },
+        "LOGIN_TEST": {
+            "action": "Logout admin, login as test employee, verify result"
+        }
+    },
+    "template": "### Reproduction Workflow Rules\nYou are generating a REVISED investigation plan based on tester-verified data.\n\n## INPUT DATA FORMAT\nYou will receive:\n1. Original checklist (tester-approved checks only)\n2. User Level info from the live system\n3. Employee info\n4. Test environment target\n\n## OUTPUT FORMAT (JSON ONLY)\nReturn ONLY valid JSON:\n```json\n{\n  \"adminSetupSteps\": [\n    {\n      \"id\": 1,\n      \"action\": \"Login as Admin\",\n      \"menu\": \"/login\",\n      \"details\": \"Use admin credentials from environment profile\"\n    },\n    {\n      \"id\": 2,\n      \"action\": \"Navigate to User Level Control\",\n      \"menu\": \"Name Config > User Level Setup > User Level Control\",\n      \"details\": \"Search for or create user level: {userLevelName}\"\n    },\n    {\n      \"id\": 3,\n      \"action\": \"Configure User Level\",\n      \"menu\": \"User Level Control > Config\",\n      \"details\": \"Set Allow Web Login={allowWeb}, Restricted IP={restrictedIP}, Inactive={inactive}\"\n    },\n    {\n      \"id\": 4,\n      \"action\": \"Assign Menu Permissions\",\n      \"menu\": \"User Level Control > Access Menu Permission\",\n      \"details\": \"Add menus: {menuList}\"\n    },\n    {\n      \"id\": 5,\n      \"action\": \"Setup Employee\",\n      \"menu\": \"Employee > Employee Setup\",\n      \"details\": \"Find/create employee {employeeCode} ({employeeName}), assign level {userLevelName}\"\n    }\n  ],\n  \"testExecutionSteps\": [\n    {\n      \"id\": 6,\n      \"action\": \"Logout Admin\",\n      \"verify\": \"Redirected to login page\"\n    },\n    {\n      \"id\": 7,\n      \"action\": \"Login as Test Employee\",\n      \"details\": \"Login with {employeeCode} credentials\",\n      \"verify\": \"Check login success/failure\",\n      \"captureScreenshot\": true\n    },\n    {\n      \"id\": 8,\n      \"action\": \"Verify Dashboard Access\",\n      \"verify\": \"Dashboard loads without 404\",\n      \"captureScreenshot\": true\n    }\n  ],\n  \"evidenceRequired\": [\n    \"User Level Name and config used\",\n    \"Menu permissions assigned\",\n    \"Employee assigned\",\n    \"Login result (pass/fail)\",\n    \"Error messages if any\"\n  ]\n}\n```\n\n## RULES\n1. NEVER invent field values - use ONLY the data provided by the tester\n2. Replace {placeholders} with actual values from the input\n3. Include captureScreenshot:true for key verification steps\n4. Include captureVideo:true for the full execution flow\n5. Keep steps atomic - one action per step"
+}

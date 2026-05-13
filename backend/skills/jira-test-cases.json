@@ -1,0 +1,85 @@
+{
+    "description": "Top test cases extracted from Jira CSV (Knowledge/Jira (2).csv). 205 testable cases across 13 modules, categorized and ready for AI test generation.",
+    "source": "Knowledge/Jira (2).csv - 16,607 rows, 234 records, 205 testable test cases",
+    "parsedDate": "2026-04-03",
+    "moduleBreakdown": {
+        "OT": 59,
+        "Leave": 55,
+        "Attendance": 45,
+        "Employee": 19,
+        "Payroll": 17,
+        "Reports": 14,
+        "Other": 9,
+        "Mobile": 5,
+        "MasterData": 3,
+        "Settings": 3,
+        "Recruitment": 2,
+        "DailyTasks": 2,
+        "Performance": 1
+    },
+    "topTestCases": {
+        "OT": [
+            "OT Request with NormalOTPolicy - allowed shifts calculate by employee request time, non-allowed by shift",
+            "OT Request on Off Day with Include From/To policy - calculates by request time",
+            "OT Request on PH Day with Allowed Shifts policy - calculates by DutyIn-DutyOut",
+            "OT Policy Not Used - approved OT hours = 0",
+            "OT Request with file attachment required vs optional vs not used",
+            "OT Request exceeds Max OT Hour limit - should show error",
+            "OT Approve batch view - select all, preview, approve with reason",
+            "OT Report - verify OT hours, approved/rejected status"
+        ],
+        "Leave": [
+            "Sanity Testing for all leave functions - Save/Update/Delete, form validation, pagination, column filter, ascending/descending",
+            "Leave Type Setup - CRUD, validation, duplicate prevention, gender-specific options",
+            "Leave Policy Setup - Policy Group, Leave Policy List, Additional Setup, Combine Leave",
+            "Leave Request - Create with multi-day, label, remark, half-day options, file attachment",
+            "Leave Request - Validation: required fields, date range, balance check, prerequisite leave",
+            "Leave Approve - Batch view, filter by period/status/type, select all, preview, approve with reason",
+            "Leave Approve - Normal view, individual approval/rejection with reason",
+            "Leave Status Report - View leave balance, history, approval status"
+        ],
+        "Attendance": [
+            "Attendance Lock - Select company/department, enter comment, select period, preview, confirm",
+            "Attendance Request - On behalf, select employee, attendance type (Ferry Late, etc.), reason",
+            "Attendance Approve - Batch view, select all, preview, filter by approved, approve with reason",
+            "Duty Roster - Create, edit, delete roster entries",
+            "Late Report - Generate late attendance report, filter by date range/department",
+            "Manual Attendance Import - Upload Excel template, verify import results"
+        ],
+        "Employee": [
+            "Employee Setup - CRUD, custom fields, additional information",
+            "Employee Policy - Assign policies, verify application",
+            "Employee Resignation - Process resignation, verify final settlement",
+            "Opening Leave Balance - Set initial leave balances for employees",
+            "Custom Field Setup - Create custom fields for employee records"
+        ],
+        "Payroll": [
+            "Payment Calculation - Verify salary computation with OT, allowances, deductions",
+            "Payment Addition/Deduction - Add ad-hoc payments or deductions",
+            "Salary Adjustment - Adjust employee salary, verify effective date"
+        ],
+        "Reports": [
+            "Custom Report - Create custom report with selected columns and filters",
+            "Transfer Report - Employee transfer history report",
+            "Supervisor Dashboard - View team attendance, leave, OT summaries",
+            "People Directory - Search and view employee profiles",
+            "Appraisal Report - Performance appraisal results report"
+        ]
+    },
+    "commonPatterns": [
+        "All grid views support: Search/Filter, Pagination, Column Sorting, Column Visibility, Export to Excel",
+        "All forms support: Add New, Edit, Delete, Save, Cancel, Import/Export Excel",
+        "All approval workflows: Batch View, Select All, Preview, Approve/Reject with Reason",
+        "All modules: Include Inactive / Active Only filters",
+        "Common error patterns: Validation on required fields, duplicate prevention, date range validation"
+    ],
+    "qualityInsights": [
+        "Leave module has highest test case count (55) and defect density",
+        "OT module has most test cases (59) with complex policy combinations",
+        "Attendance module (45) covers lock, request, approve, roster, late report",
+        "Grid UI features frequently tested: View Sensitive Info, Copy Employee Filter, Choosing Column",
+        "Many test cases include Burmese language test data and expected results",
+        "Mobile app testing (5 cases): Check In/Out, Announcement, Virtual Employee ID, Attendance Request"
+    ],
+    "template": "### Jira Test Case Library\nYou are generating automated Playwright tests for GlobalHR Cloud.\n\n## SOURCE DATA\nThis skill contains 205 real test cases extracted from the QA team's Jira system (16,607 rows of Jira export data).\n\n## MODULE PRIORITY (by test case count)\n1. OT (59 cases) - Complex policy combinations, file attachments, max hour limits\n2. Leave (55 cases) - CRUD, validation, policy setup, approval workflows, status reports\n3. Attendance (45 cases) - Lock, request, approve, duty roster, late report, manual import\n4. Employee (19 cases) - Setup, policies, resignation, opening balance, custom fields\n5. Payroll (17 cases) - Calculation, addition/deduction, salary adjustment\n6. Reports (14 cases) - Custom reports, transfer, supervisor dashboard, people directory\n7. Other (9 cases) - Cross-module and miscellaneous\n8. Mobile (5 cases) - Check In/Out, Announcement, Virtual ID, Attendance Request\n9. Master Data (3 cases) - Company, Department, Grade, Designation setup\n10. Settings (3 cases) - Application options, device mapping, zone mapping, user levels\n11. Recruitment (2 cases) - Job post list, applicant form\n12. Daily Tasks (2 cases) - Task setup, product, assign, location\n13. Performance (1 case) - Appraisal report, assignment, question group setup\n\n## COMMON PATTERNS\n- All grids: Search/Filter, Pagination, Column Sorting, Column Visibility, Export\n- All forms: Add New, Edit, Delete, Save, Cancel, Import/Export Excel\n- All approvals: Batch View, Select All, Preview, Approve/Reject with Reason\n- All modules: Include Inactive / Active Only filters\n\n## USE THIS SKILL\nWhen generating tests for any module, reference the topTestCases for that module above.\nEach test case name maps to a real QA test scenario with known expected behavior."
+}

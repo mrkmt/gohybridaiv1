@@ -1,0 +1,67 @@
+{
+  "profiles": [
+    {
+      "name": "vertex-gemini",
+      "model": "gemini-2.5-flash",
+      "apiBase": "asia-southeast1",
+      "apiType": "vertex",
+      "apiKey": "config/vertex-key.json",
+      "contextLimit": 1000000,
+      "maxTokens": 32768,
+      "temperature": 0.7,
+      "description": "Standard — Gemini 2.5 Flash, no thinking"
+    },
+    {
+      "name": "vertex-gemini-thinking",
+      "model": "gemini-2.5-flash",
+      "apiBase": "asia-southeast1",
+      "apiType": "vertex",
+      "apiKey": "config/vertex-key.json",
+      "contextLimit": 1000000,
+      "maxTokens": 16384,
+      "temperature": 0.4,
+      "thinkingBudget": 8192,
+      "description": "Deep reasoning — Gemini 2.5 Flash with thinking budget capped at 8192 tokens"
+    },
+    {
+      "name": "gemini-cli",
+      "model": "gemini-cli",
+      "apiType": "cli",
+      "command": "gemini",
+      "contextLimit": 1000000,
+      "maxTokens": 8192,
+      "description": "Fallback — local Gemini CLI"
+    },
+    {
+      "name": "gemini-http",
+      "model": "gemini-1.5-flash",
+      "apiBase": "https://generativelanguage.googleapis.com/v1beta",
+      "apiType": "gemini",
+      "apiKey": "process.env.GEMINI_API_KEY",
+      "contextLimit": 1000000,
+      "maxTokens": 8192,
+      "temperature": 0.7,
+      "description": "Backup — Gemini REST API"
+    }
+  ],
+  "assignments": {
+    "TEST_GENERATION": "vertex-gemini-thinking",
+    "REASONING": "vertex-gemini-thinking",
+    "VISION": "vertex-gemini",
+    "CODE": "vertex-gemini",
+    "INVESTIGATOR": "vertex-gemini",
+    "ARCHITECT": "vertex-gemini",
+    "REVIEWER": "vertex-gemini",
+    "QUICK": "vertex-gemini",
+    "ANALYST": "vertex-gemini",
+    "DOCUMENTATION": "vertex-gemini",
+    "BUSINESS_LOGIC": "vertex-gemini"
+  },
+  "strategy": {
+    "fallbackEnabled": true,
+    "fallbackProfile": "gemini-http",
+    "fallbackChain": ["vertex-gemini", "gemini-cli", "gemini-http"],
+    "maxRetries": 2,
+    "timeoutMs": 300000
+  }
+}

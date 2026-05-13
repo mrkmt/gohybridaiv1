@@ -1,0 +1,106 @@
+{
+    "description": "Leave module business rules from All Leave User Guide. Covers Leave Type, Leave Policy, approval workflows, and complex calculation rules.",
+    "modules": {
+        "LeaveTypeSetup": {
+            "description": "Configure leave types with validation rules",
+            "fields": ["Short Code (max 5 chars)", "Name", "Gender Option", "Use Reason Mandatory", "File Attachment Option", "Import-Only"],
+            "validationRules": [
+                "Short Code max 5 characters",
+                "Leave Type Name must be unique",
+                "Gender Option: Maternity = Female only, Paternity = Male only"
+            ]
+        },
+        "LeavePolicySetup": {
+            "description": "Configure leave policies that control entitlement and restrictions",
+            "subModules": ["Policy Group", "Leave Policy List", "Additional Setup", "Combine Leave Setup"],
+            "policyFields": {
+                "LeaveStartDate": "When the leave entitlement begins",
+                "MaxDay": "Maximum leave days allowed per period",
+                "MaxContinuousDay": "Maximum consecutive leave days allowed",
+                "MinContinuousDay": "Minimum consecutive leave days required",
+                "MonthlyRate": "Leave days accrued per month",
+                "Period": "Entitlement period (Yearly, Monthly, etc.)",
+                "PermanentDate": "Employee must be permanent by this date to qualify",
+                "ServiceMonth": "Minimum service months required before eligibility"
+            },
+            "additionalSetupOptions": [
+                "Off Day Deduction: Deduct off days from leave balance",
+                "Off Leave Off: Deduct off days that fall during leave period",
+                "Carry Over: Allow unused leave to carry to next period",
+                "Prerequisite Leave: Require another leave type to be exhausted first"
+            ]
+        },
+        "LeaveApprovalWorkflow": {
+            "description": "Multi-level leave approval process",
+            "views": ["Normal View", "Batch View"],
+            "periodFilters": ["This Week", "This Month", "All"],
+            "statusFilters": ["Show Approved", "Show Rejected", "Show Pending"],
+            "actions": ["Preview", "Approve with Reason", "Reject with Reason", "Batch Select All"]
+        },
+        "LeaveStatusReports": {
+            "description": "View leave status, balance, and history"
+        }
+    },
+    "complexRules": [
+        {
+            "name": "Off Day Deduction",
+            "description": "When enabled, off days (weekends/holidays) within the leave period are deducted from leave balance",
+            "example": "Employee takes leave Mon-Fri. If Wed is a public holiday and Off Day Deduction is ON, only 4 days deducted from balance"
+        },
+        {
+            "name": "Off Leave Off",
+            "description": "Off days that fall during leave period are treated as off days (not leave days)",
+            "example": "Employee takes leave Mon-Wed. If Tue is their scheduled off day, only Mon and Wed count as leave"
+        },
+        {
+            "name": "Combined Off Day Deduction + Off Leave Off",
+            "description": "Both rules apply simultaneously - off days and public holidays excluded from leave calculation",
+            "example": "Leave Mon-Fri. Tue=off day, Thu=public holiday. Only Mon, Wed, Fri count as leave (3 days)"
+        },
+        {
+            "name": "Restrict Leave Bridging Off Day/Public Holiday",
+            "description": "Prevents employees from booking leave that bridges an off day or public holiday (e.g., Fri+Mon leave with Sat/Sun off)",
+            "validation": "If restriction ON, system rejects leave request that would bridge an off day/holiday"
+        },
+        {
+            "name": "Carry Over",
+            "description": "Unused leave days from current period carry forward to next period up to a maximum",
+            "configurable": "Max carry-over days, expiry period"
+        },
+        {
+            "name": "Prerequisite Leave",
+            "description": "Employee must exhaust one leave type before using another (e.g., must use Annual Leave before Unpaid Leave)",
+            "example": "If Annual Leave balance > 0, system blocks Unpaid Leave request"
+        },
+        {
+            "name": "Max Continuous Day",
+            "description": "Maximum number of consecutive leave days allowed in a single request",
+            "validation": "If employee requests more days than Max Continuous Day, system rejects or splits request"
+        },
+        {
+            "name": "Min Continuous Day",
+            "description": "Minimum number of consecutive leave days required (prevents very short leave requests)",
+            "validation": "If employee requests fewer days than Min Continuous Day, system rejects"
+        }
+    ],
+    "leaveTypes": [
+        "Annual Leave",
+        "Casual Leave",
+        "Sick Leave",
+        "Maternity Leave (Female only)",
+        "Paternity Leave (Male only)",
+        "Unpaid Leave",
+        "Compensatory Leave"
+    ],
+    "halfDayOptions": [
+        "Full Day",
+        "Morning Only",
+        "Evening Only"
+    ],
+    "approvalStates": [
+        "Pending",
+        "Approved",
+        "Rejected"
+    ],
+    "template": "### GlobalHR Leave Business Rules\nYou are generating automated tests for GlobalHR Cloud Leave Management module.\n\n## LEAVE POLICY CONFIGURATION\nLeave policies control entitlement, restrictions, and calculations:\n- Leave Start Date: When entitlement begins\n- Max Day: Maximum leave days per period\n- Max/Min Continuous Day: Consecutive day limits\n- Monthly Rate: Days accrued per month\n- Period: Entitlement period (Yearly/Monthly)\n- Permanent Date: Employee must be permanent by this date\n- Service Month: Minimum service months before eligibility\n\n## COMPLEX CALCULATION RULES\n1. Off Day Deduction: Deduct off days from leave balance calculation\n2. Off Leave Off: Off days during leave period are not counted as leave days\n3. Combined: Both rules apply simultaneously\n4. Restrict Leave Bridging: Prevent leave requests that bridge off days/holidays\n5. Carry Over: Unused leave carries forward (configurable max)\n6. Prerequisite Leave: Must exhaust one type before using another\n7. Max Continuous Day: Maximum consecutive leave days\n8. Min Continuous Day: Minimum consecutive leave days\n\n## HALF-DAY OPTIONS\n- Full Day: Entire day counts as leave\n- Morning Only: Only morning session\n- Evening Only: Only evening session\nNote: Some leave types require Full Day only (Morning/Evening selection shows error)\n\n## APPROVAL WORKFLOW\n- Views: Normal View, Batch View\n- Period Filters: This Week, This Month, All\n- Status Filters: Show Approved, Show Rejected, Show Pending\n- Actions: Preview, Approve with Reason, Reject with Reason, Batch Select All\n\n## NEGATIVE TEST SCENARIOS\n1. Leave type requires Full Day but Morning/Evening selected → error modal\n2. Leave request exceeds Max Continuous Day → rejection\n3. Leave request below Min Continuous Day → rejection\n4. Prerequisite leave not exhausted → rejection\n5. Leave bridges off day with restriction enabled → rejection\n6. Leave balance insufficient → rejection\n7. Duplicate leave request for same dates → rejection"
+}

@@ -1,0 +1,1449 @@
+[
+  {
+    "Module": "Employee",
+    "SubModule": "Master (Department)",
+    "Keywords": [
+      "Short Code",
+      "Validation",
+      "Limit"
+    ],
+    "FormulaRule": "LEN(ShortCode) <= 5",
+    "ExpectedUIBehavior": "Every Short Code field has limitations and can be typed in up to 5 characters.",
+    "confidenceScore": 0.82,
+    "id": "196e0d79-6419-421d-8e7c-70bc241f2a16",
+    "status": "UNDER_REVIEW"
+  },
+  {
+    "Module": "Employee",
+    "SubModule": "Master (Leave Type)",
+    "Keywords": [
+      "Gender Option",
+      "Maternity",
+      "Paternity"
+    ],
+    "FormulaRule": "IF LeaveType == 'Maternity' THEN Gender = 'Female' ELSE IF LeaveType == 'Paternity' THEN Gender = 'Male'",
+    "ExpectedUIBehavior": "User must select Gender Option: Maternity Leave for Female, Paternity Leave for Male.",
+    "confidenceScore": 100,
+    "id": "e1ad2861-9978-41f0-9890-faad3c9944af"
+  },
+  {
+    "Module": "Employee",
+    "SubModule": "Group Policy (Leave Policy List)",
+    "Keywords": [
+      "Leave Start Date",
+      "DOE",
+      "Permanent Date"
+    ],
+    "FormulaRule": "LeaveYearStart = {Company Default | Date of Employment | Permanent Date}",
+    "ExpectedUIBehavior": "Choose when the leave year begins from three specific system date options.",
+    "confidenceScore": 100,
+    "id": "e6d45ed0-28b3-4a89-a106-fd48c931f58e"
+  },
+  {
+    "Module": "Employee",
+    "SubModule": "Group Policy (Attendance Policy List)",
+    "Keywords": [
+      "Attendance Request",
+      "Restriction",
+      "Calendar Day",
+      "Working Day"
+    ],
+    "FormulaRule": "RestrictionScope = {Calendar Day (Inc Off/Holiday) | Working Day (Exc Off/Holiday)}",
+    "ExpectedUIBehavior": "Select whether request restrictions apply on all calendar days or only on defined working days.",
+    "confidenceScore": 100,
+    "id": "9e731b51-a3bd-4186-9e3d-1cf8ef94fad9"
+  },
+  {
+    "Module": "Employee",
+    "SubModule": "Approver (Auto Approve)",
+    "Keywords": [
+      "Auto Action",
+      "Waiting Period",
+      "Day Count"
+    ],
+    "FormulaRule": "DayCountStart = SubmissionDate + 1; AutoActionAfter = Days >= 1",
+    "ExpectedUIBehavior": "The day count for the waiting period begins from the day after the request is submitted. Minimum value is 1 day.",
+    "confidenceScore": 100,
+    "id": "a87b3537-39d8-44cc-97d5-7cc6877f59f0"
+  },
+  {
+    "Module": "Employee",
+    "SubModule": "Employee Setup",
+    "Keywords": [
+      "Mandatory Fields",
+      "Validation"
+    ],
+    "FormulaRule": "ISSET(EnrollNumber, EmployeeCode, Name, LoginPassword, UserLevel, DOB, DOE)",
+    "ExpectedUIBehavior": "System prevents saving if Enroll Number, Employee Code, Name, Login Password, User Level, Date of Birth, or Date of Employment are missing.",
+    "confidenceScore": 100,
+    "id": "0c495f34-9722-48b1-a05f-55cd801bc2f8"
+  },
+  {
+    "Module": "Time Attendance",
+    "SubModule": "Shift Policy",
+    "Keywords": [
+      "Late Minutes",
+      "Threshold"
+    ],
+    "FormulaRule": "LateStatus = TRUE IF CheckInTime > (DutyIn + LateMinutes)",
+    "ExpectedUIBehavior": "Threshold for considering an employee late is defined by the Late Minutes field in the shift policy.",
+    "confidenceScore": 100,
+    "id": "b9bb1d5c-5863-4e2f-86d4-2fdba12d19b1"
+  },
+  {
+    "Module": "HR",
+    "SubModule": "Claim",
+    "Keywords": [
+      "Expiry",
+      "Restricted Days"
+    ],
+    "FormulaRule": "ClaimValid = SubmissionDate <= (ExpenseDate + ClaimRestrictedDays)",
+    "ExpectedUIBehavior": "Claim expiry days are governed by the 'Claim Restricted Days' setting in System Application Options.",
+    "confidenceScore": 95,
+    "id": "bf62d8a9-5d0d-4399-aa59-afb5e088f961"
+  },
+  {
+    "Module": "Payroll",
+    "SubModule": "Payment Calculation",
+    "Keywords": [
+      "Payslip",
+      "Password",
+      "Security"
+    ],
+    "FormulaRule": "MobilePayslipAccess = ENABLED IF 'Use Payslip Password' == TRUE",
+    "ExpectedUIBehavior": "HR must activate the payslip password option in System Settings before employees can access password-protected mobile payslips.",
+    "confidenceScore": 100,
+    "id": "d91251ca-eeaa-4def-921d-260ecbed2ba8"
+  },
+  {
+    "Module": "Recruitment",
+    "SubModule": "Candidate List",
+    "Keywords": [
+      "Workflow",
+      "Hired Status"
+    ],
+    "FormulaRule": "StatusChange(Hired) = ALLOWED IF CurrentStatus == 'Interview'",
+    "ExpectedUIBehavior": "The 'Hired' status only becomes available in the dropdown after a candidate has been moved to the 'Interview' stage.",
+    "confidenceScore": 100,
+    "id": "a6f70021-57f1-4276-a6e8-7dcf50cb829f"
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058329671-0",
+    "Module": "Attendance",
+    "SubModule": "Check In/Out",
+    "FormulaRule": "IF Location Permission = 'Already Allowed' AND App State = 'First Time Opening' THEN Map Loading Time SHOULD BE 12s-14s AND Check In/Out Loading Time SHOULD BE 2.5s-3.0s",
+    "ExpectedUIBehavior": "The application loads the Map component within 14 seconds and the Check In/Out interface within 3 seconds upon the very first launch after installation or data clear when permissions are pre-granted.",
+    "Keywords": [
+      "Mobile",
+      "Loading Time",
+      "Check In/Out",
+      "Map",
+      "First Time Opening",
+      "Location Permission"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058329671-1",
+    "Module": "Attendance",
+    "SubModule": "Check In/Out",
+    "FormulaRule": "IF Location Permission = 'Already Allowed' AND App State = 'Subsequent Opening' THEN Map Loading Time SHOULD BE 4s-8s AND Check In/Out Loading Time SHOULD BE 2s-2.25s",
+    "ExpectedUIBehavior": "During routine application use (not the first launch), the Map should load within a maximum of 8 seconds and the Check In/Out page within 2.25 seconds when location access is already active.",
+    "Keywords": [
+      "Mobile",
+      "Loading Time",
+      "Check In/Out",
+      "Map",
+      "Performance",
+      "Location Permission"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058329671-2",
+    "Module": "Attendance",
+    "SubModule": "Check In/Out",
+    "FormulaRule": "IF Location Permission = 'Prompted and Allowed' AND App State = 'First Time Opening' THEN Permission Prompt Time SHOULD BE 3.6s-4s AND Map Loading Time SHOULD BE 7s-10s AND Check In/Out Loading Time SHOULD BE 2.1s-2.4s",
+    "ExpectedUIBehavior": "Upon first launch, when the user is prompted for and grants location permission, the permission dialog should appear within 4 seconds, followed by the map loading within 10 seconds and the Check In/Out UI within 2.4 seconds.",
+    "Keywords": [
+      "Mobile",
+      "Loading Time",
+      "Permission Request",
+      "First Time Opening",
+      "Map"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058329671-3",
+    "Module": "Attendance",
+    "SubModule": "Check In/Out",
+    "FormulaRule": "IF Location Permission = 'Prompted and Allowed' AND App State = 'Subsequent Opening' THEN Permission Interaction Time SHOULD BE 1.2s-1.6s AND Map Loading Time SHOULD BE 4s-6s AND Check In/Out Loading Time SHOULD BE 2.23s-3.5s",
+    "ExpectedUIBehavior": "In standard operation requiring a permission check/refresh, the prompt/check interaction should complete within 1.6 seconds, with the map loading within 6 seconds and Check In/Out functionality within 3.5 seconds.",
+    "Keywords": [
+      "Mobile",
+      "Loading Time",
+      "Check In/Out",
+      "Permission Request",
+      "Subsequent Opening"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-1",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF NormalOTPolicy is set to 'Allowed Shifts', THEN Approved OT hours are calculated based on the Employee's Request Time.",
+    "ExpectedUIBehavior": "User enters OT Start 05:00 PM and End 07:00 PM; system calculates and displays 2 Approved OT Hours.",
+    "Keywords": [
+      "NormalOTPolicy",
+      "Allowed Shifts",
+      "Request Time"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-2",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF OffdayPolicy has 'Include From/To' enabled, THEN OT is calculated by the Employee's Request Time.",
+    "ExpectedUIBehavior": "On an off-day, user requests 09:00 AM to 05:00 PM; system calculates 8 Approved OT Hours.",
+    "Keywords": [
+      "OffdayPolicy",
+      "Include From/To",
+      "Request Time"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-3",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF Public Holiday (PH) Day Policy is set to 'Allowed Shifts', THEN OT is calculated as (DutyOut - DutyIn). IF 'Not in Allowed Shifts', THEN calculated by Request Time.",
+    "ExpectedUIBehavior": "User requests 09:00 AM to 01:00 PM; system calculates 4 Approved OT Hours based on the time span.",
+    "Keywords": [
+      "PH Day Policy",
+      "DutyIn-DutyOut",
+      "Allowed Shifts"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-4",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF OT Policy is 'Not Use', THEN the Approved OT Hours must be 0 regardless of requested time.",
+    "ExpectedUIBehavior": "User requests 05:00 PM to 07:00 PM; Approved OT Hours field shows 0.",
+    "Keywords": [
+      "OT Policy Not Use",
+      "Zero OT",
+      "Calculation"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-5",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF 'Notify Only' is ON in OT Policy List for Request Time, THEN the system allows saving Morning, Evening, and Holiday OT types successfully.",
+    "ExpectedUIBehavior": "User selects various OT types and saves; system displays 'Save Success' notification.",
+    "Keywords": [
+      "Notify Only",
+      "Morning OT",
+      "Evening OT",
+      "Holiday OT"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-6",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF 'Attach Files' is 'Not Use', THEN the file upload option is hidden. IF 'Require', THEN file upload is mandatory for saving. IF 'Option', THEN file upload is visible but not mandatory.",
+    "ExpectedUIBehavior": "UI dynamically updates 'Attach Files' field visibility and validation requirements based on the selected policy.",
+    "Keywords": [
+      "Attach Files",
+      "Validation",
+      "Policy Requirement"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058426147-7",
+    "Module": "OT Management",
+    "SubModule": "OT Policy / Request",
+    "FormulaRule": "IF 'Allow Max OT Hour' is configured (e.g., 4 hours), THEN any OT request exceeding this duration must be blocked with a validation error.",
+    "ExpectedUIBehavior": "User attempts to save a 5-hour OT request; system shows error message: 'OT request is over Max OT 4 Hours'.",
+    "Keywords": [
+      "Max OT Hour",
+      "Validation Error",
+      "Restriction"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058457421-2-1",
+    "Module": "Common UI Components",
+    "SubModule": "Grid Toolbar",
+    "FormulaRule": "IF Grid related functions (View/Hide Sensitive Info, Copy Employee Filter, Choosing Column) are active, THEN they must be positioned and displayed within the grid toolbar.",
+    "ExpectedUIBehavior": "UI elements for grid management display at the top-level toolbar of the data grid.",
+    "Keywords": [
+      "Grid Toolbar",
+      "UI Position",
+      "Function Organization"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058457421-2-2",
+    "Module": "Employee Management",
+    "SubModule": "Data Privacy",
+    "FormulaRule": "IF 'View Sensitive Info' is enabled, THEN 'Bank Info' must be visible; IF 'Hide Sensitive Info' is enabled, THEN 'Bank Info' must be masked or removed from view.",
+    "ExpectedUIBehavior": "Dynamic visibility toggle for sensitive data columns (Bank Info) based on user selection.",
+    "Keywords": [
+      "View Sensitive Info",
+      "Hide Sensitive Info",
+      "Bank Info",
+      "Data Privacy"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058457421-2-3",
+    "Module": "Employee Management",
+    "SubModule": "Filter Management",
+    "FormulaRule": "IF 'Copy Employee Filter' function is executed, THEN the system must copy the current employee data/filter criteria and display message 'Success, copied employee data.'",
+    "ExpectedUIBehavior": "Action triggers a data copy process followed by a success toast/notification message: 'Success, copied employee data.'",
+    "Keywords": [
+      "Copy Employee Filter",
+      "Success Message",
+      "Data Export"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058457421-2-4",
+    "Module": "Common UI Components",
+    "SubModule": "Column Management",
+    "FormulaRule": "IF 'Choosing Column' function is triggered, THEN the UI must allow the user to select and update grid column visibility successfully.",
+    "ExpectedUIBehavior": "Grid columns are dynamically added or removed from the view based on user selection in the Column Chooser UI.",
+    "Keywords": [
+      "Choosing Column",
+      "Grid Configuration",
+      "Column Visibility"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058487280-3",
+    "Module": "People Directory",
+    "SubModule": "Period",
+    "FormulaRule": "IF a period is selected and preview is triggered, THEN the Grid UI display must remain consistent.",
+    "ExpectedUIBehavior": "The Grid UI component should maintain a consistent layout and state after the user selects a specific period and clicks the preview button.",
+    "Keywords": [
+      "People Directory",
+      "Period Selection",
+      "Preview",
+      "Grid UI",
+      "Consistency"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-1",
+    "Module": "Leave",
+    "SubModule": "Leave Type",
+    "FormulaRule": "IF (Leave Type Name is duplicate) THEN (System must block Save/Update operation)",
+    "ExpectedUIBehavior": "Show validation error message near the name field and prevent form submission.",
+    "Keywords": [
+      "Duplicate",
+      "Validation",
+      "Save",
+      "Update"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-2",
+    "Module": "Leave",
+    "SubModule": "Leave Type",
+    "FormulaRule": "IF (Use Reason Mandatory is enabled) AND (Reason field is empty) THEN (Block Save/Update)",
+    "ExpectedUIBehavior": "Reason field should show mandatory indicator; error message appears if left blank on submission.",
+    "Keywords": [
+      "Mandatory",
+      "Reason",
+      "Validation"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-3",
+    "Module": "Leave",
+    "SubModule": "Leave Request",
+    "FormulaRule": "IF (Leave Date overlaps with Pending OR Approved leave) THEN (Block Request)",
+    "ExpectedUIBehavior": "UI displays an error notification stating the employee has already applied for leave on the selected dates.",
+    "Keywords": [
+      "Validation",
+      "Already Applied",
+      "Pending",
+      "Approved",
+      "Conflict"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-4",
+    "Module": "Leave",
+    "SubModule": "Leave Request",
+    "FormulaRule": "IF (Requested Days > Available Balance) THEN (Block Request)",
+    "ExpectedUIBehavior": "Error message indicating 'No enough balance' and preventing the 'Save' action.",
+    "Keywords": [
+      "Balance",
+      "Insufficient",
+      "Validation"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-5",
+    "Module": "Leave",
+    "SubModule": "Leave Request",
+    "FormulaRule": "IF (Requested Date is an Offday) THEN (System should trigger validation/warning)",
+    "ExpectedUIBehavior": "Prevent selection or show error message if user attempts to apply leave on a scheduled offday.",
+    "Keywords": [
+      "Offday",
+      "Validation",
+      "Leave Request"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-6",
+    "Module": "Leave",
+    "SubModule": "Leave Request",
+    "FormulaRule": "IF (Continuous Days < Min Limit) OR (Continuous Days > Max Limit) THEN (Block Request)",
+    "ExpectedUIBehavior": "Show validation message regarding minimum or maximum continuous day constraints defined in policy.",
+    "Keywords": [
+      "Max continuous day",
+      "Min continuous day",
+      "Policy",
+      "Constraint"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058514919-7",
+    "Module": "Leave",
+    "SubModule": "Leave Approve",
+    "FormulaRule": "IF (Multi-select is active) THEN (Allow Bulk Approve/Reject/Delete actions)",
+    "ExpectedUIBehavior": "Checkboxes in the list view allow selection of multiple rows for global action buttons at the top.",
+    "Keywords": [
+      "Multi Approve",
+      "Multi Reject",
+      "Multi Delete",
+      "Bulk Action"
+    ],
+    "confidenceScore": 0.92
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058545804-5-1",
+    "Module": "User Management",
+    "SubModule": "User Level Assign",
+    "FormulaRule": "IF 'User Level Assign' Save Dialog is displayed, THEN Title Font MUST be 17.5px Roboto.",
+    "ExpectedUIBehavior": "The Save Dialog title font is consistently set to 17.5px Roboto for UI uniformity.",
+    "Keywords": [
+      "UI Suggestion",
+      "Font Consistency",
+      "Roboto",
+      "Save Dialog",
+      "User Level Assign"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058545804-5-2",
+    "Module": "Device Management",
+    "SubModule": "Device Mapping",
+    "FormulaRule": "IF 'Device Mapping' Save Dialog is displayed, THEN Title Font MUST be 17.5px Roboto.",
+    "ExpectedUIBehavior": "The Save Dialog title font is consistently set to 17.5px Roboto for UI uniformity.",
+    "Keywords": [
+      "UI Suggestion",
+      "Font Consistency",
+      "Roboto",
+      "Save Dialog",
+      "Device Mapping"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058545804-5-3",
+    "Module": "Device Management",
+    "SubModule": "Zone Mapping",
+    "FormulaRule": "IF 'Zone Mapping' Save Dialog is displayed, THEN Title Font MUST be 17.5px Roboto.",
+    "ExpectedUIBehavior": "The Save Dialog title font is consistently set to 17.5px Roboto for UI uniformity.",
+    "Keywords": [
+      "UI Suggestion",
+      "Font Consistency",
+      "Roboto",
+      "Save Dialog",
+      "Zone Mapping"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058545804-5-4",
+    "Module": "User Management",
+    "SubModule": "User Employee Access",
+    "FormulaRule": "IF 'Select Permission Type Dialog' in User Employee Access is displayed, THEN Title Font MUST be 17.5px Roboto.",
+    "ExpectedUIBehavior": "The Select Permission Type Dialog title font is consistently set to 17.5px Roboto for UI uniformity.",
+    "Keywords": [
+      "UI Suggestion",
+      "Font Consistency",
+      "Roboto",
+      "User Employee Access",
+      "Permission Dialog"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-1",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF on Employee Resignation form, THEN the Rejoin button must maintain the same alignment as the 'Resign' and 'Clear Fingerprint Data' checkboxes.",
+    "ExpectedUIBehavior": "Rejoin button is visually aligned with the checkboxes for Resign and Clear Fingerprint Data.",
+    "Keywords": [
+      "Rejoin button",
+      "Alignment",
+      "Checkboxes"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-2",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF on Employee Resignation form, THEN the 'Resign Label' checkbox must be aligned with the 'Resign' checkbox.",
+    "ExpectedUIBehavior": "Resign Label checkbox and Resign checkbox are positioned in the same horizontal/vertical plane.",
+    "Keywords": [
+      "Resign Label",
+      "Alignment",
+      "Checkbox"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-3",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF the Comment dropdown is accessed, THEN it must display a list of predefined comments and allow the user to select one.",
+    "ExpectedUIBehavior": "Dropdown displays items and updates the field value upon selection.",
+    "Keywords": [
+      "Comment",
+      "Dropdown",
+      "Selectable"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-4",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF the 'Resign' label is clicked, THEN the 'Comment' and 'Remark' fields must be displayed with identical alignment.",
+    "ExpectedUIBehavior": "Comment and Remark input fields are perfectly aligned relative to each other.",
+    "Keywords": [
+      "Comment",
+      "Remark",
+      "Alignment"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-5",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF on Employee Resignation form, THEN the 'User Level' and 'Department' fields must be aligned.",
+    "ExpectedUIBehavior": "User Level field and Department field components are visually synchronized in alignment.",
+    "Keywords": [
+      "User Level",
+      "Department",
+      "Alignment"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-6",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF viewing the Employee Resignation form, THEN the 'User Level' label font size must match the font size of all other field labels.",
+    "ExpectedUIBehavior": "Typography consistency across all labels in the form.",
+    "Keywords": [
+      "User Level",
+      "Label",
+      "Font Size"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-7",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF on Employee Resignation form, THEN Employee Code, Name, Designation, Group Policy, DOE, Email, Department, Company, and Card ID fields must be read-only (uneditable).",
+    "ExpectedUIBehavior": "System fields are disabled or rendered as text to prevent user modification.",
+    "Keywords": [
+      "Read-only",
+      "Uneditable",
+      "Employee Data"
+    ],
+    "confidenceScore": 0.99
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058573053-6-8",
+    "Module": "Employee Management",
+    "SubModule": "Employee Resignation",
+    "FormulaRule": "IF an Employee Resignation record is updated, THEN the form must trigger a refresh to reflect the changes.",
+    "ExpectedUIBehavior": "The UI automatically reloads or updates its state after a successful submission.",
+    "Keywords": [
+      "Update",
+      "Refresh",
+      "Resignation Form"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058609086-7-1",
+    "Module": "Leave",
+    "SubModule": "Leave Approval",
+    "FormulaRule": "IF Leave Request is Approved by (L1 OR L2 OR L3) from (Mobile OR Web) THEN Result = Success",
+    "ExpectedUIBehavior": "The system processes the approval successfully across both mobile and web platforms, updating the workflow state accordingly.",
+    "Keywords": [
+      "Leave",
+      "L1 Approval",
+      "L2 Approval",
+      "L3 Approval",
+      "Mobile",
+      "Web"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058609086-7-2",
+    "Module": "Leave",
+    "SubModule": "Leave Approval",
+    "FormulaRule": "IF Leave Request is Rejected by (L1 OR L2 OR L3) from (Mobile OR Web) THEN Result = Success",
+    "ExpectedUIBehavior": "The system processes the rejection successfully across both mobile and web platforms, notifying the applicant and updating the status.",
+    "Keywords": [
+      "Leave",
+      "L1 Rejection",
+      "L2 Rejection",
+      "L3 Rejection",
+      "Mobile",
+      "Web"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058609086-7-3",
+    "Module": "Leave",
+    "SubModule": "Leave Reporting",
+    "FormulaRule": "IF Leave actions (Approve/Reject) are performed THEN Leave Status Report MUST accurately reflect the transaction",
+    "ExpectedUIBehavior": "The Leave Status Report displays the current state of leave requests after L1/L2/L3 actions.",
+    "Keywords": [
+      "Leave Status Report",
+      "Reporting",
+      "Audit Trail"
+    ],
+    "confidenceScore": 0.9
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058638265-8-1",
+    "Module": "Leave",
+    "SubModule": "Leave Status Report",
+    "FormulaRule": "IF table content exceeds display width THEN horizontal scrollbar MUST be automatically displayed at the table bottom.",
+    "ExpectedUIBehavior": "Horizontal scrollbar appears at the bottom of the table automatically when content overflows.",
+    "Keywords": [
+      "Leave Status Report",
+      "Horizontal Scrollbar",
+      "Auto Display",
+      "Overflow"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058638265-8-2",
+    "Module": "Leave",
+    "SubModule": "Leave Status Report",
+    "FormulaRule": "IF horizontal scrollbar is present THEN it MUST support smooth mouse drag interaction (left/right).",
+    "ExpectedUIBehavior": "User can drag the scrollbar smoothly with a mouse to navigate columns.",
+    "Keywords": [
+      "Mouse Drag",
+      "Smooth Scroll",
+      "Navigation"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058638265-8-3",
+    "Module": "Leave",
+    "SubModule": "Leave Status Report",
+    "FormulaRule": "IF column count changes THEN horizontal scrollbar length MUST adjust dynamically to match content width.",
+    "ExpectedUIBehavior": "Scrollbar handle size and track length change proportionally based on the number of columns displayed.",
+    "Keywords": [
+      "Dynamic Column",
+      "Scrollbar Length",
+      "Responsive"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058638265-8-4",
+    "Module": "Leave",
+    "SubModule": "Leave Status Report",
+    "FormulaRule": "IF browser zoom level causes content overflow THEN horizontal scrollbar MUST be automatically displayed.",
+    "ExpectedUIBehavior": "Scrollbar visibility responds to zoom changes to ensure all columns remain accessible.",
+    "Keywords": [
+      "Zoom Level",
+      "Auto Display",
+      "Responsiveness"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-1",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF Employment History Save Form is submitted, THEN all fields must undergo system validation.",
+    "ExpectedUIBehavior": "Validation messages should appear for invalid or missing required fields.",
+    "Keywords": [
+      "Manual",
+      "Validation",
+      "Save"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-2",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF Employment History is saved for an existing (Old) employee manually, THEN the system should update the record successfully.",
+    "ExpectedUIBehavior": "UI should display an 'Updated' success message.",
+    "Keywords": [
+      "Manual",
+      "Update",
+      "Old Employee"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-3",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF Employment History is saved for a New employee manually, THEN the system should create the record successfully.",
+    "ExpectedUIBehavior": "UI should display a 'Success' message.",
+    "Keywords": [
+      "Manual",
+      "Save",
+      "New Employee"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-4",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF an existing Employment History record is updated manually, THEN data must be modified and success confirmed.",
+    "ExpectedUIBehavior": "UI displays 'Updated' and reflects changes in the data view.",
+    "Keywords": [
+      "Manual",
+      "Update",
+      "Data Sync"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-5",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF a History record is deleted manually, THEN it should be removed from the system successfully.",
+    "ExpectedUIBehavior": "UI should display a 'Success' message upon deletion.",
+    "Keywords": [
+      "Manual",
+      "Delete"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-6",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF Employment History is imported for a non-existent EmployeeCode, THEN the system must block the import and show a specific validation error.",
+    "ExpectedUIBehavior": "Display error message: 'EmployeeCode [Code] doesn't exist in system at row [Number].'",
+    "Keywords": [
+      "Import",
+      "Validation",
+      "EmployeeCode"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-7",
+    "Module": "Employment",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF Employment History is imported for an existing (Old) employee, THEN the system should insert the data successfully.",
+    "ExpectedUIBehavior": "Status should show 'Success and Insert'.",
+    "Keywords": [
+      "Import",
+      "Insert",
+      "Old Employee"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058670233-8",
+    "Module": "People Directory",
+    "SubModule": "Employment History",
+    "FormulaRule": "IF View Employment History is triggered in the People Directory, THEN the system must fetch and display the history records.",
+    "ExpectedUIBehavior": "Employment History records should be visible in the UI.",
+    "Keywords": [
+      "People Directory",
+      "View",
+      "History"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058699003-10",
+    "Module": "ARH",
+    "SubModule": "Announcement",
+    "FormulaRule": "IF 'Choose Audience' is selected AND the corresponding required field is empty, THEN the 'Post' button MUST be disabled; IF the required field contains a valid value, THEN the 'Post' button MUST be enabled.",
+    "ExpectedUIBehavior": "The 'Post' button dynamically toggles its disabled/enabled state based on whether the mandatory fields associated with the selected audience type (e.g., Department) are populated.",
+    "Keywords": [
+      "Announcement",
+      "Post Function",
+      "Choose Audience",
+      "Required Field",
+      "Button Validation"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-01",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF 'Choosing Date Picker' is selected, THEN the Date Picker component must be visible; IF unselected, THEN it must be hidden.",
+    "ExpectedUIBehavior": "The Date Picker UI element toggles its visibility based on the 'Choosing Date Picker' selection state.",
+    "Keywords": [
+      "Date Picker",
+      "Visibility",
+      "Toggle",
+      "Functional"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-02",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF user interacts with the report dropdown, THEN they should be able to select a specific report from the list.",
+    "ExpectedUIBehavior": "Dropdown menu provides a list of selectable reports and updates state upon selection.",
+    "Keywords": [
+      "Dropdown",
+      "Selection",
+      "Report"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-03",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF using the Classic Calendar, THEN the system must allow selection of Year, Month, and Date specifically.",
+    "ExpectedUIBehavior": "Calendar interface supports granular selection of year, month, and day levels.",
+    "Keywords": [
+      "Calendar",
+      "Classic",
+      "Date Selection",
+      "Functional"
+    ],
+    "confidenceScore": 0.97
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-04",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF viewing the Custom Report module, THEN the Top Bar must display a logo image, text, bell icon, and profile image.",
+    "ExpectedUIBehavior": "Navigation bar structure includes branding, notification icons, and user profile indicators.",
+    "Keywords": [
+      "Top Bar",
+      "Navigation",
+      "UI Structure"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-05",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF displaying 'From Date' or 'To Date' inputs, THEN font family must be Roboto, weight 400, size 14px, and color #1d1b20.",
+    "ExpectedUIBehavior": "Input text styling adheres to specified design system typography.",
+    "Keywords": [
+      "Typography",
+      "Styling",
+      "Date Input",
+      "UI"
+    ],
+    "confidenceScore": 0.99
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-06",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF 'From Date' or 'To Date' labels are displayed, THEN font family must be Roboto, weight 400, size 14px, and color #0000008a.",
+    "ExpectedUIBehavior": "Field label styling adheres to secondary design system typography requirements.",
+    "Keywords": [
+      "Typography",
+      "Label",
+      "Styling",
+      "UI"
+    ],
+    "confidenceScore": 0.99
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-07",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF on the Custom Report page, THEN the title area must display breadcrumbs (Home/Report/Custom Report) and action triggers (Export PDF, Export Excel, Org Tree, Filter By Employee).",
+    "ExpectedUIBehavior": "Page header provides navigation context and access to primary export and filtering tools.",
+    "Keywords": [
+      "Breadcrumbs",
+      "Actions",
+      "Export",
+      "Filtering"
+    ],
+    "confidenceScore": 0.96
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-08",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF the calendar component is active, THEN it must support vertical scrolling (up to down).",
+    "ExpectedUIBehavior": "Calendar provides scrollable navigation for browsing dates/months.",
+    "Keywords": [
+      "Calendar",
+      "Scrolling",
+      "Navigation"
+    ],
+    "confidenceScore": 0.94
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058722995-09",
+    "Module": "Reports",
+    "SubModule": "Custom Report",
+    "FormulaRule": "IF floating labels/controls are used, THEN the following must be accessible: Choosing Columns, Hide/Show Search, Toggle Calendar, Reset All, and Filter By View Type.",
+    "ExpectedUIBehavior": "Operational controls are available via floating label elements or interactive components.",
+    "Keywords": [
+      "Floating Label",
+      "Controls",
+      "Search",
+      "Reset"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-01",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF the Transfer Report page is loaded, THEN the Top Bar Navigation must display a logo image, text label, bell icon, and profile image.",
+    "ExpectedUIBehavior": "UI elements (logo, text, bell, profile) are visible and properly aligned in the top navigation bar.",
+    "Keywords": [
+      "Top bar",
+      "Navigation",
+      "UI Components"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-02",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF viewing the Transfer Report form, THEN the header must include the title 'Transfer Report', breadcrumbs (Home / Report / Transfer Report), and action buttons (Export Excel, Organization Tree, Filter By Employee).",
+    "ExpectedUIBehavior": "Form title and navigation path are displayed with associated functional icons and filter buttons.",
+    "Keywords": [
+      "Form Title",
+      "Breadcrumbs",
+      "Action Bar"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-03",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF interacting with the Date Picker, THEN the user must be able to select Year, Month, and Date from a Classic Calendar and scroll vertically.",
+    "ExpectedUIBehavior": "Calendar opens on click, allows date selection across years/months, and supports up-to-down scrolling functionality.",
+    "Keywords": [
+      "Calendar",
+      "Date Selection",
+      "Scrolling"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-04",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF rendering 'From Date' and 'To Date' fields, THEN the font must be Roboto-400 (14px, #1d1b20) and labels must be Roboto-400 (14px, #0000008a).",
+    "ExpectedUIBehavior": "Input text and label text follow specific typography and color styles defined in the design system.",
+    "Keywords": [
+      "Typography",
+      "CSS",
+      "Date Input"
+    ],
+    "confidenceScore": 0.99
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-05",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF the data table is displayed, THEN the columns 'EnrollNumber', 'EmployeeCode', and 'EmployeeName' must be locked/pinned.",
+    "ExpectedUIBehavior": "Locked columns remain fixed on the left side while the rest of the table is scrolled horizontally.",
+    "Keywords": [
+      "Column Lock",
+      "Table Structure",
+      "Fixed Columns"
+    ],
+    "confidenceScore": 0.99
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-06",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF the mouse hovers over a Column Header, THEN the cursor must change to a 'hand' icon.",
+    "ExpectedUIBehavior": "The pointer changes to a pointer/hand icon to indicate interactivity on table headers.",
+    "Keywords": [
+      "Mouse Hover",
+      "UX",
+      "Column Header"
+    ],
+    "confidenceScore": 0.97
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058759671-07",
+    "Module": "Reports",
+    "SubModule": "Transfer Report",
+    "FormulaRule": "IF the Transfer Report table is rendered, THEN headers must use Roboto font (13px, #1d1b20) and include a functional column resizer.",
+    "ExpectedUIBehavior": "Table headers are styled correctly and users can click-and-drag edges to resize column widths.",
+    "Keywords": [
+      "Table Header",
+      "Column Resizer",
+      "Styling"
+    ],
+    "confidenceScore": 0.98
+  },
+  {
+    "id": "JIRA-EXTRACT-20260309-001",
+    "Module": "Reports",
+    "SubModule": "Supervisor Dashboard Report",
+    "FormulaRule": "IF user navigates to Report -> Supervisor Dashboard Report THEN system MUST redirect to the Dashboard page.",
+    "ExpectedUIBehavior": "Top bar displays logo, notification bell, and profile image. Form title 'Dashboard' appears on the left; 'Add Gadget', 'Organization Tree', 'Layout', and 'Configuration' buttons appear on the right. Sidebar remains visible.",
+    "Keywords": [
+      "navigation",
+      "dashboard",
+      "layout",
+      "supervisor"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-20260309-002",
+    "Module": "Reports",
+    "SubModule": "Supervisor Dashboard Report",
+    "FormulaRule": "IF Dashboard page is loaded THEN display localized greeting AND footer links.",
+    "ExpectedUIBehavior": "'Welcome Back!' displayed at top left; 'Hello Administrator, Good Morning' at bottom left. Toggle calendar on the right. Copyright text at bottom left redirects to 'www.globalhr.com.mm'. 'Terms and Condition' text at bottom right redirects to the T&C page.",
+    "Keywords": [
+      "greeting",
+      "footer",
+      "redirect",
+      "calendar"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-20260309-003",
+    "Module": "Reports",
+    "SubModule": "Supervisor Dashboard Report",
+    "FormulaRule": "IF 'Add Gadget' dialog is open AND user enters text in the gadget name search field THEN the search icon MUST change to a cross (clear) icon.",
+    "ExpectedUIBehavior": "Dialog displays 'Gadget Name link' and 'Gadget Name Card' sections. Categories (Summary, My Attendance, My Leave History, Team) display with down-arrow symbols for expansion.",
+    "Keywords": [
+      "gadget",
+      "search",
+      "UI-feedback",
+      "dialog"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-20260309-004",
+    "Module": "Reports",
+    "SubModule": "Supervisor Dashboard Report",
+    "FormulaRule": "IF gadget categories are expanded THEN display predefined dashboard links (Summary: 10 items, My Attendance: 2 items, My Leave History: 1 item, Team: 8 items).",
+    "ExpectedUIBehavior": "Links include specific reports like 'Monthly requests summary', 'Daily attendance summary by teammates', 'My daily attendance', 'My Team', and 'Teammates' birthdays'.",
+    "Keywords": [
+      "gadget-list",
+      "summary",
+      "attendance",
+      "leave-history",
+      "team-reports"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-20260309-005",
+    "Module": "Reports",
+    "SubModule": "Supervisor Dashboard Report",
+    "FormulaRule": "IF a Gadget Card is rendered THEN it MUST follow the Primary/Secondary text naming convention.",
+    "ExpectedUIBehavior": "e.g., Card 'My daily attendance (1)' must show Primary text 'Daily Attendance' and Secondary text 'My daily attendance'. Similar patterns apply to Monthly Attendance, Leave History, Birthdays, Holidays, and Announcements.",
+    "Keywords": [
+      "UI-labels",
+      "naming-convention",
+      "gadget-card",
+      "formatting"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-01",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF user accesses the People Directory tab for the first time THEN display 'Please select an employee or company to view the report.'",
+    "ExpectedUIBehavior": "Display a yellow warning/info message prompt to the user.",
+    "Keywords": [
+      "UI",
+      "Initial State",
+      "Warning Message"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-02",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF an employee is selected via Treeview or Filter THEN display the relevant People Directory record and UI details.",
+    "ExpectedUIBehavior": "Main report area populates with specific employee data.",
+    "Keywords": [
+      "Selection",
+      "Treeview",
+      "Filter"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-03",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'New Employee Only' checkbox is toggled THEN filter the directory results to only include employees marked as new.",
+    "ExpectedUIBehavior": "Grid content dynamically updates based on the checkbox state.",
+    "Keywords": [
+      "Filter",
+      "Checkbox",
+      "New Employee"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-04",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Resign Employee Only' checkbox is toggled THEN filter the directory results to only include resigned employees.",
+    "ExpectedUIBehavior": "Grid content dynamically updates based on the checkbox state.",
+    "Keywords": [
+      "Filter",
+      "Checkbox",
+      "Resign Employee"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-05",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Show Bank Info' checkbox is checked THEN include bank account details in the directory view.",
+    "ExpectedUIBehavior": "Additional columns for bank information are rendered in the report grid.",
+    "Keywords": [
+      "Visibility",
+      "Bank Info",
+      "Checkbox"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-06",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Show Dept. Hierarchy' checkbox is checked THEN display the hierarchical structure of departments for employees.",
+    "ExpectedUIBehavior": "UI displays organizational structure details within the report context.",
+    "Keywords": [
+      "Hierarchy",
+      "Department",
+      "Checkbox"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-07",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Period' dropdown is changed THEN filter the directory records based on the selected date range or fiscal period.",
+    "ExpectedUIBehavior": "Data set refreshes to match the selected period criteria.",
+    "Keywords": [
+      "Filter",
+      "Period",
+      "Dropdown"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-08",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Summarize with AI' icon is clicked THEN generate an AI-driven summary of the selected employee's profile.",
+    "ExpectedUIBehavior": "An AI summary output or modal is displayed to the user.",
+    "Keywords": [
+      "AI",
+      "Summary",
+      "Automation"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-09",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Excel Export' button is clicked THEN export the current directory data to an Excel file.",
+    "ExpectedUIBehavior": "System triggers a file download in .xlsx format.",
+    "Keywords": [
+      "Export",
+      "Excel",
+      "Data Retrieval"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-10",
+    "Module": "Reports",
+    "SubModule": "Summary View Report",
+    "FormulaRule": "IF user accesses the Summary View Report tab for the first time THEN display 'Please select a company to view the report.'",
+    "ExpectedUIBehavior": "Display a yellow warning/info message prompt specific to company selection.",
+    "Keywords": [
+      "UI",
+      "Initial State",
+      "Company Selection"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-11",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Change Resign' button is clicked THEN allow the user to update the resignation status of the selected employee.",
+    "ExpectedUIBehavior": "Opens a status change form or confirmation dialog for resignation.",
+    "Keywords": [
+      "Status Change",
+      "Resignation",
+      "Action"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "id": "JIRA-EXTRACT-1773058830391-12",
+    "Module": "Reports",
+    "SubModule": "People Directory",
+    "FormulaRule": "IF 'Reset Device' button is clicked THEN clear the bound device ID for the selected employee.",
+    "ExpectedUIBehavior": "Clears device authentication data for the user profile.",
+    "Keywords": [
+      "Device Reset",
+      "Security",
+      "Action"
+    ],
+    "confidenceScore": 0.95
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Short Name",
+      "Character Limit"
+    ],
+    "FormulaRule": "length(Leave_Short_Name) <= 5",
+    "ExpectedUIBehavior": "Restrict input to 5 characters",
+    "confidenceScore": 100,
+    "id": "b42790d9-a2c2-4b2c-88a1-c6cde5b5af5f"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Leave Name",
+      "Character Limit"
+    ],
+    "FormulaRule": "length(Leave_Name) <= 50",
+    "ExpectedUIBehavior": "Restrict input to 50 characters",
+    "confidenceScore": 100,
+    "id": "9418203b-3c3e-4b15-99cc-0c8da9282ba0"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Gender",
+      "Paternity Leave"
+    ],
+    "FormulaRule": "If LeaveType == 'Paternity' Then Visible_To = 'Male'",
+    "ExpectedUIBehavior": "Show leave type only to male employees",
+    "confidenceScore": 100,
+    "id": "f34603b3-d6ca-487a-a40b-373f6df0507a"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Gender",
+      "Maternity Leave"
+    ],
+    "FormulaRule": "If LeaveType == 'Maternity' Then Visible_To = 'Female'",
+    "ExpectedUIBehavior": "Show leave type only to female employees",
+    "confidenceScore": 100,
+    "id": "8d8e3fd5-e552-4e07-ba62-0d068ef3fb19"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Marital Status",
+      "Single Status Leave"
+    ],
+    "FormulaRule": "If LeaveType == 'Single Status Leave' Then Visible_To = 'Single'",
+    "ExpectedUIBehavior": "Show leave type only to single employees",
+    "confidenceScore": 100,
+    "id": "d9d8bf1e-40e9-412c-a9e9-725df596ce57"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Reason",
+      "Mandatory"
+    ],
+    "FormulaRule": "If Taken_Days >= Setting_Days Then Reason_Required = True",
+    "ExpectedUIBehavior": "Enforce reason field based on the threshold of leave days taken",
+    "confidenceScore": 95,
+    "id": "2f251ae1-64dc-4d37-9020-52b7fc10c6d5"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Type Setup",
+    "Keywords": [
+      "Delete",
+      "Validation"
+    ],
+    "FormulaRule": "If Leave_Used_Count > 0 Then Allow_Delete = False",
+    "ExpectedUIBehavior": "Disable or hide delete icon for leave types already in use",
+    "confidenceScore": 100,
+    "id": "621bd0d9-1398-4dc7-b7ac-0cdfcd482943"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Policy List",
+    "Keywords": [
+      "Max Continuous Day",
+      "Allowance"
+    ],
+    "FormulaRule": "Continuous_Days <= Max_Continuous_Day",
+    "ExpectedUIBehavior": "Show error if user requests more consecutive days than allowed",
+    "confidenceScore": 100,
+    "id": "a1541f77-4479-4e15-ac6f-655509b1427e"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Policy List",
+    "Keywords": [
+      "Balance",
+      "Pending"
+    ],
+    "FormulaRule": "If Deduct_Pending == True Then Display_Balance = Total_Allowance - (Approved_Taken + Pending_Days)",
+    "ExpectedUIBehavior": "Subtract pending leave requests from the displayed balance",
+    "confidenceScore": 100,
+    "id": "5ca9d812-216f-44b3-a225-c04e30ab0b9d"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Additional Setup",
+    "Keywords": [
+      "Off Leave Off",
+      "Logic"
+    ],
+    "FormulaRule": "If Front_Off_Days == Back_Off_Days Then Deduct_Next_Off_Days",
+    "ExpectedUIBehavior": "Automatically assign next off-days as leave if the gap is equal on both sides",
+    "confidenceScore": 95,
+    "id": "9140ad7f-8240-43a2-9d89-6fc60296410f"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Additional Setup",
+    "Keywords": [
+      "Prerequisite",
+      "Sick Leave"
+    ],
+    "FormulaRule": "If Current_Leave == 'Prolong Sick' Then Prerequisite_Leave_Balance == 0",
+    "ExpectedUIBehavior": "Prevent selection of Prolong Sick Leave until Medical Leave is exhausted",
+    "confidenceScore": 100,
+    "id": "deb29bdb-9929-4996-9890-28e5418a6671"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Additional Setup",
+    "Keywords": [
+      "Max Transaction",
+      "Request Limit"
+    ],
+    "FormulaRule": "Transaction_Count <= Max_Leave_Request_Count Per Period",
+    "ExpectedUIBehavior": "Block new leave requests if the maximum frequency for the period is reached",
+    "confidenceScore": 95,
+    "id": "783b4576-c539-418f-82d4-126a4f0883a5"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Leave Approve",
+    "Keywords": [
+      "Excel Import",
+      "Validation"
+    ],
+    "FormulaRule": "If Data_Validation == 'Valid' Then Enable_Import_Button",
+    "ExpectedUIBehavior": "Only allow importing data after the validation process is successful",
+    "confidenceScore": 100,
+    "id": "0b033744-ec3c-4a70-9725-90da39e9b32a"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Additional Setup",
+    "Keywords": [
+      "Attendance Day",
+      "Restriction"
+    ],
+    "FormulaRule": "Restriction_Count = Total_Days - Off_Days",
+    "ExpectedUIBehavior": "Calculate restriction period excluding company holidays and weekends",
+    "confidenceScore": 90,
+    "id": "e4262a09-bf72-4258-80d2-a92203403f16"
+  },
+  {
+    "Module": "Leave",
+    "SubModule": "Additional Setup",
+    "Keywords": [
+      "Pro-rata",
+      "DOE"
+    ],
+    "FormulaRule": "Allowance = (Remaining_Months / 12) * Annual_Entitlement",
+    "ExpectedUIBehavior": "Calculate leave entitlement based on the employee's date of employment",
+    "confidenceScore": 90,
+    "id": "b0c80de1-ac11-4e68-b538-7b853e41248f"
+  }
+]
